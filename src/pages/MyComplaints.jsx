@@ -13,7 +13,7 @@ import {
   AlertCircle,
   XCircle,
 } from "lucide-react"
-import { useAuth } from "../hooks/useAuth.jsx"
+import { useAuth } from "../hooks/useAuth"
 import { SAMPLE_COMPLAINTS, COMPLAINT_CATEGORIES } from "../utils/constants"
 import Navbar from "../components/Navbar"
 
@@ -191,7 +191,7 @@ const MyComplaints = () => {
   const stats = getStatusStats()
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-100">
       <Navbar />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -209,7 +209,7 @@ const MyComplaints = () => {
 
           <Link
             to="/report-issue"
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 hover-lift flex items-center gap-2"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center gap-2 shadow-lg"
           >
             <Plus className="w-4 h-4" />
             Report New Issue
@@ -223,31 +223,31 @@ const MyComplaints = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.6 }}
         >
-          <div className="glass-card rounded-xl p-4 text-center">
-            <div className="text-2xl font-bold text-gray-900 mb-1">{stats.total}</div>
-            <div className="text-sm text-gray-600">Total</div>
+          <div className="bg-card rounded-xl p-4 text-center shadow-lg border border-amber-200">
+            <div className="text-2xl font-bold text-foreground mb-1">{stats.total}</div>
+            <div className="text-sm text-muted-foreground">Total</div>
           </div>
-          <div className="glass-card rounded-xl p-4 text-center">
+          <div className="bg-card rounded-xl p-4 text-center shadow-lg border border-amber-200">
             <div className="text-2xl font-bold text-yellow-600 mb-1">{stats.pending}</div>
-            <div className="text-sm text-gray-600">Pending</div>
+            <div className="text-sm text-muted-foreground">Pending</div>
           </div>
-          <div className="glass-card rounded-xl p-4 text-center">
+          <div className="bg-card rounded-xl p-4 text-center shadow-lg border border-amber-200">
             <div className="text-2xl font-bold text-blue-600 mb-1">{stats.inProgress}</div>
-            <div className="text-sm text-gray-600">In Progress</div>
+            <div className="text-sm text-muted-foreground">In Progress</div>
           </div>
-          <div className="glass-card rounded-xl p-4 text-center">
+          <div className="bg-card rounded-xl p-4 text-center shadow-lg border border-amber-200">
             <div className="text-2xl font-bold text-green-600 mb-1">{stats.resolved}</div>
-            <div className="text-sm text-gray-600">Resolved</div>
+            <div className="text-sm text-muted-foreground">Resolved</div>
           </div>
-          <div className="glass-card rounded-xl p-4 text-center">
+          <div className="bg-card rounded-xl p-4 text-center shadow-lg border border-amber-200">
             <div className="text-2xl font-bold text-red-600 mb-1">{stats.rejected}</div>
-            <div className="text-sm text-gray-600">Rejected</div>
+            <div className="text-sm text-muted-foreground">Rejected</div>
           </div>
         </motion.div>
 
         {/* Search and Filters */}
         <motion.div
-          className="glass-card rounded-2xl p-6 mb-8"
+          className="bg-card rounded-2xl p-6 mb-8 shadow-lg border border-amber-200"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4, duration: 0.6 }}
@@ -261,7 +261,7 @@ const MyComplaints = () => {
                 placeholder="Search your complaints..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white/50 backdrop-blur-sm"
+                className="w-full pl-10 pr-4 py-3 border border-input rounded-xl focus:ring-2 focus:ring-ring focus:border-transparent transition-all duration-200 bg-background"
               />
             </div>
 
@@ -270,7 +270,7 @@ const MyComplaints = () => {
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white/50 backdrop-blur-sm"
+                className="px-4 py-3 border border-input rounded-xl focus:ring-2 focus:ring-ring focus:border-transparent bg-background"
               >
                 <option value="">All Categories</option>
                 {COMPLAINT_CATEGORIES.map((category) => (
@@ -283,7 +283,7 @@ const MyComplaints = () => {
               <select
                 value={selectedStatus}
                 onChange={(e) => setSelectedStatus(e.target.value)}
-                className="px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white/50 backdrop-blur-sm"
+                className="px-4 py-3 border border-input rounded-xl focus:ring-2 focus:ring-ring focus:border-transparent bg-background"
               >
                 <option value="">All Status</option>
                 <option value="pending">Pending</option>
@@ -295,7 +295,7 @@ const MyComplaints = () => {
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white/50 backdrop-blur-sm"
+                className="px-4 py-3 border border-input rounded-xl focus:ring-2 focus:ring-ring focus:border-transparent bg-background"
               >
                 <option value="newest">Newest First</option>
                 <option value="oldest">Oldest First</option>
@@ -332,7 +332,7 @@ const MyComplaints = () => {
               {complaints.length === 0 ? (
                 <Link
                   to="/report-issue"
-                  className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 hover-lift"
+                  className="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-3 rounded-xl font-semibold transition-all duration-300 hover-lift"
                 >
                   <Plus className="w-4 h-4" />
                   Report Your First Issue
@@ -347,7 +347,7 @@ const MyComplaints = () => {
             filteredComplaints.map((complaint, index) => (
               <motion.div
                 key={complaint.id}
-                className="glass-card rounded-2xl p-6 hover-lift"
+                className="bg-card rounded-2xl p-6 shadow-lg border border-amber-200 hover:shadow-xl transition-shadow duration-300"
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.6 + index * 0.1, duration: 0.6 }}
@@ -373,7 +373,7 @@ const MyComplaints = () => {
 
                   <div className="flex flex-col items-end gap-2">
                     <StatusTag status={complaint.status} />
-                    <span className="text-sm font-medium text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
+                    <span className="text-sm font-medium text-primary bg-primary/10 px-3 py-1 rounded-full border border-primary/20">
                       {complaint.category}
                     </span>
                   </div>
@@ -395,7 +395,7 @@ const MyComplaints = () => {
 
                   <Link
                     to={`/complaint/${complaint.id}`}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-all duration-300 hover-lift text-sm"
+                    className="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg font-medium transition-all duration-300 text-sm shadow-sm"
                   >
                     View Details
                   </Link>

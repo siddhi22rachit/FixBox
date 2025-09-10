@@ -39,29 +39,21 @@ const Home = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
 
-      <section className="bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-100 py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-amber-700 to-orange-600 bg-clip-text text-transparent mb-6">
-              FixBox
-            </h1>
-            <p className="text-xl md:text-2xl text-amber-800 mb-4 max-w-3xl mx-auto">
-              Smart Grievance Redressal System for College Campus
-            </p>
-            <p className="text-lg text-amber-700 mb-12 max-w-2xl mx-auto">
-              Empowering students and faculty to report, vote, and resolve campus issues through a transparent and
-              efficient digital platform.
-            </p>
+      <section className="py-20" style={{ background: 'linear-gradient(135deg, #fef7ed 0%, #fed7aa 100%)' }}>
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div>
+              <h1 className="text-6xl font-bold mb-6" style={{ color: '#92400e' }}>
+                FixBox
+              </h1>
+              <p className="text-2xl mb-4" style={{ color: '#b45309' }}>
+                Smart Grievance Management for College Students
+              </p>
+              <p className="text-lg mb-8" style={{ color: '#78532d' }}>
+                Report issues, vote on priorities, and track resolutions through our transparent digital platform designed for student communities.
+              </p>
 
-            <div className="mb-12">
-              <img
-                src="/student-tech-issues.png"
-                alt="Students reporting campus issues"
-                className="mx-auto rounded-lg shadow-lg max-w-md"
-              />
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+               <div className="flex flex-col sm:flex-row gap-4">
               <Link
                 to="/login"
                 className="bg-gradient-to-r from-amber-700 to-orange-600 hover:from-amber-800 hover:to-orange-700 text-white px-8 py-3 rounded-lg font-semibold text-lg transition-all duration-300 flex items-center justify-center gap-2 shadow-lg"
@@ -75,6 +67,15 @@ const Home = () => {
               >
                 Create Account
               </Link>
+            </div>
+            </div>
+
+            <div className="lg:text-center">
+              <img 
+                src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"
+                alt="Students discussing campus issues"
+                className="rounded-2xl shadow-2xl w-full max-w-md mx-auto"
+              />
             </div>
           </div>
         </div>

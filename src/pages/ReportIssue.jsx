@@ -3,7 +3,7 @@ import { useState } from "react"
 import { motion } from "framer-motion"
 import { useNavigate } from "react-router-dom"
 import { Upload, X, AlertCircle, CheckCircle, Camera, FileText, Tag } from "lucide-react"
-import { useAuth } from "../hooks/useAuth.jsx"
+import { useAuth } from "../hooks/useAuth"
 import { COMPLAINT_CATEGORIES } from "../utils/constants"
 import Navbar from "../components/Navbar"
 
@@ -100,7 +100,7 @@ const ReportIssue = () => {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-100">
         <Navbar />
         <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <motion.div
@@ -142,7 +142,7 @@ const ReportIssue = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-100">
       <Navbar />
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -162,7 +162,7 @@ const ReportIssue = () => {
 
         {/* Form */}
         <motion.div
-          className="glass-card rounded-2xl p-8"
+          className="bg-card rounded-2xl p-8 shadow-lg border border-amber-200"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.6 }}
@@ -193,7 +193,7 @@ const ReportIssue = () => {
                   value={formData.title}
                   onChange={handleChange}
                   placeholder="Briefly describe the issue (e.g., Broken AC in Computer Lab)"
-                  className="w-full pl-10 pr-4 py-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white/50 backdrop-blur-sm text-lg"
+                  className="w-full pl-10 pr-4 py-4 border border-input rounded-xl focus:ring-2 focus:ring-ring focus:border-transparent transition-all duration-200 bg-background text-lg"
                   required
                 />
               </div>
@@ -212,7 +212,7 @@ const ReportIssue = () => {
                     name="category"
                     value={formData.category}
                     onChange={handleChange}
-                    className="w-full pl-10 pr-4 py-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white/50 backdrop-blur-sm appearance-none"
+                    className="w-full pl-10 pr-4 py-4 border border-input rounded-xl focus:ring-2 focus:ring-ring focus:border-transparent transition-all duration-200 bg-background appearance-none"
                     required
                   >
                     <option value="">Select a category</option>
@@ -238,9 +238,9 @@ const ReportIssue = () => {
                           ? priority === "high"
                             ? "bg-red-100 text-red-700 border-2 border-red-300"
                             : priority === "medium"
-                              ? "bg-yellow-100 text-yellow-700 border-2 border-yellow-300"
+                              ? "bg-amber-100 text-amber-700 border-2 border-amber-300"
                               : "bg-green-100 text-green-700 border-2 border-green-300"
-                          : "bg-gray-100 text-gray-600 border-2 border-gray-200 hover:border-gray-300"
+                          : "bg-muted text-muted-foreground border-2 border-input hover:border-muted-foreground"
                       }`}
                     >
                       {priority.charAt(0).toUpperCase() + priority.slice(1)}
@@ -261,7 +261,7 @@ const ReportIssue = () => {
                 onChange={handleChange}
                 rows={6}
                 placeholder="Provide a detailed description of the issue. Include when it started, how it affects you, and any other relevant information..."
-                className="w-full px-4 py-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white/50 backdrop-blur-sm resize-none"
+                className="w-full px-4 py-4 border border-input rounded-xl focus:ring-2 focus:ring-ring focus:border-transparent transition-all duration-200 bg-background resize-none"
                 required
               />
               <p className="text-xs text-gray-500 mt-2">Minimum 20 characters required</p>
@@ -274,7 +274,7 @@ const ReportIssue = () => {
               </label>
 
               {/* Upload Area */}
-              <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-blue-400 transition-colors">
+              <div className="border-2 border-dashed border-input rounded-xl p-8 text-center hover:border-amber-400 transition-colors">
                 <input
                   type="file"
                   multiple
@@ -285,9 +285,11 @@ const ReportIssue = () => {
                 />
                 <label htmlFor="image-upload" className="cursor-pointer">
                   <Camera className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <div className="text-lg font-medium text-gray-900 mb-2">Upload Images</div>
-                  <div className="text-sm text-gray-500 mb-4">Drag and drop images here, or click to browse</div>
-                  <div className="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors">
+                  <div className="text-lg font-medium text-foreground mb-2">Upload Images</div>
+                  <div className="text-sm text-muted-foreground mb-4">
+                    Drag and drop images here, or click to browse
+                  </div>
+                  <div className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-6 py-3 rounded-xl font-semibold hover:bg-primary/90 transition-colors">
                     <Upload className="w-4 h-4" />
                     Choose Files
                   </div>
@@ -327,14 +329,14 @@ const ReportIssue = () => {
               <button
                 type="button"
                 onClick={() => navigate("/dashboard")}
-                className="flex-1 border border-gray-300 hover:border-gray-400 text-gray-700 py-4 rounded-xl font-semibold transition-all duration-300"
+                className="flex-1 border border-input hover:border-muted-foreground text-foreground py-4 rounded-xl font-semibold transition-all duration-300"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={loading}
-                className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white py-4 rounded-xl font-semibold transition-all duration-300 hover-lift disabled:transform-none"
+                className="flex-1 bg-primary hover:bg-primary/90 disabled:bg-primary/50 text-primary-foreground py-4 rounded-xl font-semibold transition-all duration-300 hover-lift disabled:transform-none"
               >
                 {loading ? (
                   <div className="flex items-center justify-center gap-2">
@@ -351,38 +353,38 @@ const ReportIssue = () => {
 
         {/* Tips */}
         <motion.div
-          className="mt-8 glass-card rounded-2xl p-6"
+          className="mt-8 bg-card rounded-2xl p-6 shadow-lg border border-amber-200"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4, duration: 0.6 }}
         >
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Tips for Better Issue Reports</h3>
-          <div className="grid md:grid-cols-2 gap-4 text-sm text-gray-600">
+          <h3 className="text-lg font-semibold text-foreground mb-4">Tips for Better Issue Reports</h3>
+          <div className="grid md:grid-cols-2 gap-4 text-sm text-muted-foreground">
             <div className="flex items-start gap-3">
-              <div className="w-2 h-2 bg-blue-600 rounded-full mt-2 flex-shrink-0"></div>
+              <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
               <div>
-                <div className="font-medium text-gray-900 mb-1">Be Specific</div>
+                <div className="font-medium text-foreground mb-1">Be Specific</div>
                 <div>Include exact locations, times, and detailed descriptions of the problem.</div>
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <div className="w-2 h-2 bg-blue-600 rounded-full mt-2 flex-shrink-0"></div>
+              <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
               <div>
-                <div className="font-medium text-gray-900 mb-1">Add Photos</div>
+                <div className="font-medium text-foreground mb-1">Add Photos</div>
                 <div>Visual evidence helps administration understand and prioritize issues better.</div>
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <div className="w-2 h-2 bg-blue-600 rounded-full mt-2 flex-shrink-0"></div>
+              <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
               <div>
-                <div className="font-medium text-gray-900 mb-1">Choose Right Category</div>
+                <div className="font-medium text-foreground mb-1">Choose Right Category</div>
                 <div>Proper categorization helps route your issue to the right department.</div>
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <div className="w-2 h-2 bg-blue-600 rounded-full mt-2 flex-shrink-0"></div>
+              <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
               <div>
-                <div className="font-medium text-gray-900 mb-1">Set Priority</div>
+                <div className="font-medium text-foreground mb-1">Set Priority</div>
                 <div>Help us understand the urgency and impact of the issue on campus life.</div>
               </div>
             </div>

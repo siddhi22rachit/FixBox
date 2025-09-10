@@ -1,6 +1,5 @@
 "use client"
 import { useState } from "react"
-import { motion } from "framer-motion"
 import { Calendar, User, Tag, TrendingUp, CheckCircle, XCircle, Clock, AlertCircle } from "lucide-react"
 
 const StatusTag = ({ status }) => {
@@ -10,31 +9,31 @@ const StatusTag = ({ status }) => {
         return {
           icon: Clock,
           text: "Pending Review",
-          className: "bg-gradient-to-r from-amber-100 to-yellow-100 text-amber-800 border-amber-300",
+          className: "bg-amber-50 text-amber-800 border border-amber-200",
         }
       case "in-progress":
         return {
           icon: AlertCircle,
           text: "In Progress",
-          className: "bg-gradient-to-r from-blue-100 to-cyan-100 text-blue-800 border-blue-300",
+          className: "bg-orange-50 text-orange-800 border border-orange-200",
         }
       case "resolved":
         return {
           icon: CheckCircle,
           text: "Resolved ✨",
-          className: "bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border-green-300",
+          className: "bg-green-50 text-green-800 border border-green-200",
         }
       case "rejected":
         return {
           icon: XCircle,
           text: "Not Approved",
-          className: "bg-gradient-to-r from-red-100 to-pink-100 text-red-800 border-red-300",
+          className: "bg-red-50 text-red-800 border border-red-200",
         }
       default:
         return {
           icon: Clock,
           text: "Unknown",
-          className: "bg-gradient-to-r from-gray-100 to-slate-100 text-gray-800 border-gray-300",
+          className: "bg-stone-50 text-stone-800 border border-stone-200",
         }
     }
   }
@@ -42,9 +41,7 @@ const StatusTag = ({ status }) => {
   const { icon: Icon, text, className } = getStatusConfig()
 
   return (
-    <div
-      className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold border-2 ${className} shadow-sm`}
-    >
+    <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium ${className}`}>
       <Icon className="w-4 h-4" />
       {text}
     </div>
@@ -72,93 +69,71 @@ const VotingButtons = ({ complaint, onVote }) => {
 
   return (
     <div className="space-y-4">
-      {/* Voting Buttons */}
       <div className="flex gap-3">
-        <motion.button
+        <button
           onClick={() => handleVote("yes")}
           disabled={isVoting || userVote}
-          className={`flex-1 flex items-center justify-center gap-2 py-4 px-6 rounded-2xl font-bold text-sm transition-all duration-300 shadow-lg ${
+          className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-medium text-sm transition-all duration-200 ${
             userVote === "yes"
-              ? "bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-green-200"
+              ? "bg-green-600 text-white"
               : userVote === "no"
                 ? "bg-gray-100 text-gray-500 cursor-not-allowed"
-                : "bg-gradient-to-r from-green-50 to-emerald-50 text-green-700 border-2 border-green-200 hover:from-green-100 hover:to-emerald-100 hover:border-green-300 hover:shadow-xl hover:-translate-y-1"
+                : "bg-green-50 text-green-700 border border-green-200 hover:bg-green-100"
           }`}
-          whileTap={{ scale: 0.95 }}
         >
-          <CheckCircle className="w-5 h-5" />
-          {isVoting && userVote !== "yes" ? (
-            <div className="w-5 h-5 border-2 border-green-600 border-t-transparent rounded-full animate-spin" />
-          ) : (
-            "👍 Serious Issue!"
-          )}
-        </motion.button>
+          <CheckCircle className="w-4 h-4" />
+          {isVoting && userVote !== "yes" ? "Voting..." : "👍 Serious Issue"}
+        </button>
 
-        <motion.button
+        <button
           onClick={() => handleVote("no")}
           disabled={isVoting || userVote}
-          className={`flex-1 flex items-center justify-center gap-2 py-4 px-6 rounded-2xl font-bold text-sm transition-all duration-300 shadow-lg ${
+          className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-medium text-sm transition-all duration-200 ${
             userVote === "no"
-              ? "bg-gradient-to-r from-red-500 to-pink-500 text-white shadow-red-200"
+              ? "bg-red-600 text-white"
               : userVote === "yes"
                 ? "bg-gray-100 text-gray-500 cursor-not-allowed"
-                : "bg-gradient-to-r from-red-50 to-pink-50 text-red-700 border-2 border-red-200 hover:from-red-100 hover:to-pink-100 hover:border-red-300 hover:shadow-xl hover:-translate-y-1"
+                : "bg-red-50 text-red-700 border border-red-200 hover:bg-red-100"
           }`}
-          whileTap={{ scale: 0.95 }}
         >
-          <XCircle className="w-5 h-5" />
-          {isVoting && userVote !== "no" ? (
-            <div className="w-5 h-5 border-2 border-red-600 border-t-transparent rounded-full animate-spin" />
-          ) : (
-            "👎 Not Priority"
-          )}
-        </motion.button>
+          <XCircle className="w-4 h-4" />
+          {isVoting && userVote !== "no" ? "Voting..." : "👎 Not Priority"}
+        </button>
       </div>
 
-      {/* Vote Results */}
       <div className="space-y-3">
-        <div className="flex justify-between text-sm font-semibold text-gray-700">
-          <span>🏫 Campus Community ({totalVotes} votes)</span>
-          <span className="text-blue-600">{yesPercentage.toFixed(0)}% agree this needs fixing!</span>
+        <div className="flex justify-between text-sm font-medium text-gray-700">
+          <span>Campus Community ({totalVotes} votes)</span>
+          <span className="text-amber-700">{yesPercentage.toFixed(0)}% agree</span>
         </div>
 
-        <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden shadow-inner">
+        <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
           <div className="flex h-full">
-            <div
-              className="bg-gradient-to-r from-green-400 to-emerald-500 transition-all duration-700 shadow-sm"
-              style={{ width: `${yesPercentage}%` }}
-            />
-            <div
-              className="bg-gradient-to-r from-red-400 to-pink-500 transition-all duration-700 shadow-sm"
-              style={{ width: `${noPercentage}%` }}
-            />
+            <div className="bg-green-500 transition-all duration-500" style={{ width: `${yesPercentage}%` }} />
+            <div className="bg-red-500 transition-all duration-500" style={{ width: `${noPercentage}%` }} />
           </div>
         </div>
 
-        <div className="flex justify-between text-sm font-medium">
+        <div className="flex justify-between text-sm">
           <span className="flex items-center gap-2 text-green-600">
-            <div className="w-3 h-3 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full shadow-sm" />
-            {complaint.votes.yes} Students Agree
+            <div className="w-2 h-2 bg-green-500 rounded-full" />
+            {complaint.votes.yes} Agree
           </span>
           <span className="flex items-center gap-2 text-red-600">
-            <div className="w-3 h-3 bg-gradient-to-r from-red-400 to-pink-500 rounded-full shadow-sm" />
-            {complaint.votes.no} Students Disagree
+            <div className="w-2 h-2 bg-red-500 rounded-full" />
+            {complaint.votes.no} Disagree
           </span>
         </div>
       </div>
 
       {userVote && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className={`text-center text-sm font-bold py-3 px-4 rounded-xl ${
-            userVote === "yes"
-              ? "bg-gradient-to-r from-green-100 to-emerald-100 text-green-800"
-              : "bg-gradient-to-r from-red-100 to-pink-100 text-red-800"
+        <div
+          className={`text-center text-sm font-medium py-2 px-4 rounded-lg ${
+            userVote === "yes" ? "bg-green-50 text-green-800" : "bg-red-50 text-red-800"
           }`}
         >
-          🎉 Thanks for your vote! Your voice helps improve our campus!
-        </motion.div>
+          Thanks for your vote! Your voice helps improve our campus.
+        </div>
       )}
     </div>
   )
@@ -179,55 +154,49 @@ const ComplaintCard = ({ complaint, onVote, showVoting = true, compact = false }
 
     if (yesPercentage >= 80) return "text-red-600"
     if (yesPercentage >= 60) return "text-orange-600"
-    return "text-yellow-600"
+    return "text-amber-600"
   }
 
   return (
-    <motion.div
-      className="bg-white/80 backdrop-blur-lg rounded-3xl p-8 shadow-xl border border-white/20 hover:shadow-2xl transition-all duration-500"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      whileHover={{ y: -5, scale: 1.02 }}
-    >
+    <div className="bg-card rounded-xl p-6 shadow-sm border border-border hover:shadow-md transition-all duration-200">
       {/* Header */}
-      <div className="flex items-start justify-between mb-6">
+      <div className="flex items-start justify-between mb-4">
         <div className="flex-1">
-          <h3 className="text-xl font-bold text-gray-900 mb-3 leading-tight">{complaint.title}</h3>
+          <h3 className="text-lg font-semibold text-foreground mb-2 leading-tight">{complaint.title}</h3>
 
-          <div className="flex items-center gap-6 text-sm text-gray-600 mb-4">
-            <div className="flex items-center gap-2 bg-blue-50 px-3 py-1 rounded-full">
-              <User className="w-4 h-4 text-blue-600" />
-              <span className="font-medium">{complaint.submittedBy}</span>
+          <div className="flex items-center gap-4 text-sm text-muted-foreground mb-3">
+            <div className="flex items-center gap-1.5">
+              <User className="w-4 h-4" />
+              <span>{complaint.submittedBy}</span>
             </div>
-            <div className="flex items-center gap-2 bg-purple-50 px-3 py-1 rounded-full">
-              <Calendar className="w-4 h-4 text-purple-600" />
-              <span className="font-medium">{formatDate(complaint.submittedAt)}</span>
+            <div className="flex items-center gap-1.5">
+              <Calendar className="w-4 h-4" />
+              <span>{formatDate(complaint.submittedAt)}</span>
             </div>
           </div>
         </div>
 
-        <div className="flex flex-col items-end gap-3">
+        <div className="flex flex-col items-end gap-2">
           <StatusTag status={complaint.status} />
           <div
-            className={`flex items-center gap-2 text-sm font-bold px-3 py-1 rounded-full bg-gradient-to-r from-orange-100 to-red-100 ${getPriorityColor()}`}
+            className={`flex items-center gap-1.5 text-xs font-medium px-2 py-1 rounded-md bg-amber-50 ${getPriorityColor()}`}
           >
-            <TrendingUp className="w-4 h-4" />
+            <TrendingUp className="w-3 h-3" />
             High Priority
           </div>
         </div>
       </div>
 
       {/* Category */}
-      <div className="flex items-center gap-3 mb-6">
-        <Tag className="w-5 h-5 text-indigo-600" />
-        <span className="text-sm font-bold text-indigo-700 bg-gradient-to-r from-indigo-100 to-purple-100 px-4 py-2 rounded-full border border-indigo-200">
-          📚 {complaint.category}
+      <div className="flex items-center gap-2 mb-4">
+        <Tag className="w-4 h-4 text-primary" />
+        <span className="text-sm font-medium text-primary bg-primary/10 px-3 py-1 rounded-md">
+          {complaint.category}
         </span>
       </div>
 
       {/* Description */}
-      <p className={`text-gray-700 mb-8 leading-relaxed font-medium ${compact ? "line-clamp-2" : "line-clamp-3"}`}>
+      <p className={`text-muted-foreground mb-6 leading-relaxed ${compact ? "line-clamp-2" : "line-clamp-3"}`}>
         {complaint.description}
       </p>
 
@@ -236,19 +205,19 @@ const ComplaintCard = ({ complaint, onVote, showVoting = true, compact = false }
 
       {/* Compact Stats */}
       {compact && (
-        <div className="flex items-center justify-between pt-6 border-t border-gray-200">
-          <div className="flex items-center gap-6 text-sm font-semibold text-gray-600">
-            <span className="bg-blue-100 px-3 py-1 rounded-full">{complaint.votes.yes + complaint.votes.no} votes</span>
-            <span className="bg-green-100 px-3 py-1 rounded-full text-green-700">
+        <div className="flex items-center justify-between pt-4 border-t border-border">
+          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+            <span>{complaint.votes.yes + complaint.votes.no} votes</span>
+            <span className="text-primary">
               {Math.round((complaint.votes.yes / (complaint.votes.yes + complaint.votes.no)) * 100)}% support
             </span>
           </div>
-          <button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-6 py-2 rounded-full font-bold text-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+          <button className="bg-primary text-primary-foreground px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors">
             View Details →
           </button>
         </div>
       )}
-    </motion.div>
+    </div>
   )
 }
 

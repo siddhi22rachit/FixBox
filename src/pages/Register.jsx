@@ -3,7 +3,7 @@ import { useState } from "react"
 import { motion } from "framer-motion"
 import { Link, useNavigate } from "react-router-dom"
 import { Eye, EyeOff, User, Mail, Lock, GraduationCap, ArrowLeft, CheckCircle } from "lucide-react"
-import { useAuth } from "../hooks/useAuth.jsx"
+import { useAuth } from "../hooks/useAuth"
 import { COLLEGES, USER_ROLES } from "../utils/constants"
 
 const Register = () => {
@@ -87,7 +87,7 @@ const Register = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-100 flex items-center justify-center p-4">
       <motion.div
         className="w-full max-w-md"
         initial={{ opacity: 0, y: 30 }}
@@ -97,17 +97,17 @@ const Register = () => {
         {/* Back to Home */}
         <Link
           to="/"
-          className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 mb-8 transition-colors"
+          className="inline-flex items-center gap-2 text-amber-700 hover:text-amber-800 mb-8 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           Back to Home
         </Link>
 
         {/* Register Card */}
-        <div className="glass-card rounded-2xl p-8 shadow-2xl">
+        <div className="bg-card rounded-2xl p-8 shadow-2xl border border-amber-200">
           <div className="text-center mb-8">
             <motion.h1
-              className="text-3xl font-bold gradient-text mb-2"
+              className="text-3xl font-bold bg-gradient-to-r from-amber-700 to-orange-600 bg-clip-text text-transparent mb-2"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2, duration: 0.6 }}
@@ -115,7 +115,7 @@ const Register = () => {
               Join FixBox
             </motion.h1>
             <motion.p
-              className="text-gray-600"
+              className="text-muted-foreground"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.6 }}
@@ -129,15 +129,15 @@ const Register = () => {
             <div className="flex items-center gap-4">
               <div
                 className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${
-                  step >= 1 ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-500"
+                  step >= 1 ? "bg-amber-700 text-white" : "bg-muted text-muted-foreground"
                 }`}
               >
                 {step > 1 ? <CheckCircle className="w-4 h-4" /> : "1"}
               </div>
-              <div className={`w-12 h-1 rounded ${step >= 2 ? "bg-blue-600" : "bg-gray-200"}`} />
+              <div className={`w-12 h-1 rounded ${step >= 2 ? "bg-amber-700" : "bg-muted"}`} />
               <div
                 className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${
-                  step >= 2 ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-500"
+                  step >= 2 ? "bg-amber-700 text-white" : "bg-muted text-muted-foreground"
                 }`}
               >
                 2
@@ -170,7 +170,7 @@ const Register = () => {
                       value={formData.name}
                       onChange={handleChange}
                       placeholder="Enter your full name"
-                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white/50 backdrop-blur-sm"
+                      className="w-full pl-10 pr-4 py-3 border border-input rounded-xl focus:ring-2 focus:ring-ring focus:border-transparent transition-all duration-200 bg-background"
                       required
                     />
                   </div>
@@ -187,7 +187,7 @@ const Register = () => {
                       value={formData.email}
                       onChange={handleChange}
                       placeholder="your.name@college.edu"
-                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white/50 backdrop-blur-sm"
+                      className="w-full pl-10 pr-4 py-3 border border-input rounded-xl focus:ring-2 focus:ring-ring focus:border-transparent transition-all duration-200 bg-background"
                       required
                     />
                   </div>
@@ -204,7 +204,7 @@ const Register = () => {
                       value={formData.password}
                       onChange={handleChange}
                       placeholder="Create a password"
-                      className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white/50 backdrop-blur-sm"
+                      className="w-full pl-10 pr-12 py-3 border border-input rounded-xl focus:ring-2 focus:ring-ring focus:border-transparent transition-all duration-200 bg-background"
                       required
                     />
                     <button
@@ -228,7 +228,7 @@ const Register = () => {
                       value={formData.confirmPassword}
                       onChange={handleChange}
                       placeholder="Confirm your password"
-                      className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white/50 backdrop-blur-sm"
+                      className="w-full pl-10 pr-12 py-3 border border-input rounded-xl focus:ring-2 focus:ring-ring focus:border-transparent transition-all duration-200 bg-background"
                       required
                     />
                     <button
@@ -244,7 +244,7 @@ const Register = () => {
                 <button
                   type="button"
                   onClick={handleNextStep}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-semibold transition-all duration-300 hover-lift"
+                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground py-3 rounded-xl font-semibold transition-all duration-300"
                 >
                   Continue
                 </button>
@@ -267,8 +267,8 @@ const Register = () => {
                       onClick={() => setFormData({ ...formData, role: USER_ROLES.STUDENT })}
                       className={`p-4 rounded-xl border-2 transition-all duration-200 ${
                         formData.role === USER_ROLES.STUDENT
-                          ? "border-blue-500 bg-blue-50 text-blue-700"
-                          : "border-gray-300 hover:border-gray-400"
+                          ? "border-amber-600 bg-amber-50 text-amber-700"
+                          : "border-input hover:border-muted-foreground"
                       }`}
                     >
                       <GraduationCap className="w-6 h-6 mx-auto mb-2" />
@@ -279,8 +279,8 @@ const Register = () => {
                       onClick={() => setFormData({ ...formData, role: USER_ROLES.TEACHER })}
                       className={`p-4 rounded-xl border-2 transition-all duration-200 ${
                         formData.role === USER_ROLES.TEACHER
-                          ? "border-blue-500 bg-blue-50 text-blue-700"
-                          : "border-gray-300 hover:border-gray-400"
+                          ? "border-amber-600 bg-amber-50 text-amber-700"
+                          : "border-input hover:border-muted-foreground"
                       }`}
                     >
                       <User className="w-6 h-6 mx-auto mb-2" />
@@ -296,7 +296,7 @@ const Register = () => {
                     name="college"
                     value={formData.college}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white/50 backdrop-blur-sm"
+                    className="w-full px-4 py-3 border border-input rounded-xl focus:ring-2 focus:ring-ring focus:border-transparent transition-all duration-200 bg-background"
                     required
                   >
                     <option value="">Choose your college</option>
@@ -312,14 +312,14 @@ const Register = () => {
                   <button
                     type="button"
                     onClick={() => setStep(1)}
-                    className="flex-1 border border-gray-300 hover:border-gray-400 text-gray-700 py-3 rounded-xl font-semibold transition-all duration-300"
+                    className="flex-1 border border-input hover:border-muted-foreground text-foreground py-3 rounded-xl font-semibold transition-all duration-300"
                   >
                     Back
                   </button>
                   <button
                     type="submit"
                     disabled={loading}
-                    className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white py-3 rounded-xl font-semibold transition-all duration-300 hover-lift disabled:transform-none"
+                    className="flex-1 bg-primary hover:bg-primary/90 disabled:bg-primary/50 text-primary-foreground py-3 rounded-xl font-semibold transition-all duration-300"
                   >
                     {loading ? (
                       <div className="flex items-center justify-center gap-2">
@@ -342,9 +342,9 @@ const Register = () => {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.8, duration: 0.6 }}
           >
-            <p className="text-gray-600">
+            <p className="text-muted-foreground">
               Already have an account?{" "}
-              <Link to="/login" className="text-blue-600 hover:text-blue-700 font-semibold transition-colors">
+              <Link to="/login" className="text-primary hover:text-primary/80 font-semibold transition-colors">
                 Sign In
               </Link>
             </p>
