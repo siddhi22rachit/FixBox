@@ -3,7 +3,7 @@ import { useState } from "react"
 import { motion } from "framer-motion"
 import { useNavigate } from "react-router-dom"
 import { Upload, X, AlertCircle, CheckCircle, Camera, FileText, Tag } from "lucide-react"
-import { useAuth } from "../hooks/useAuth"
+import { useAuth } from "../hooks/useAuth.jsx"
 import { COMPLAINT_CATEGORIES } from "../utils/constants"
 import Navbar from "../components/Navbar"
 

@@ -1,7 +1,7 @@
 "use client"
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
 import { AnimatePresence } from "framer-motion"
-import { AuthProvider } from "./hooks/useAuth"
+import { AuthProvider } from "./hooks/useAuth.jsx"
 import Home from "./pages/Home"
 import Login from "./pages/Login"
 import Register from "./pages/Register"

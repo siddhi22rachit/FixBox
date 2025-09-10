@@ -18,7 +18,7 @@ import {
   FileText,
   CheckCircle,
 } from "lucide-react"
-import { useAuth } from "../hooks/useAuth"
+import { useAuth } from "../hooks/useAuth.jsx"
 import { COLLEGES, USER_ROLES } from "../utils/constants"
 import Navbar from "../components/Navbar"
 

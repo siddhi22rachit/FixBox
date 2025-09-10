@@ -17,7 +17,6 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Check for stored user data on app load
     const storedUser = localStorage.getItem("fixbox_user")
     if (storedUser) {
       setUser(JSON.parse(storedUser))
@@ -45,13 +44,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem("fixbox_user", JSON.stringify(newUser))
   }
 
-  const value = {
-    user,
-    login,
-    logout,
-    register,
-    loading,
-  }
+  const value = { user, login, logout, register, loading }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

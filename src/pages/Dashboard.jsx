@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Search, Filter, ChevronDown, TrendingUp, Users, CheckCircle, Clock } from "lucide-react"
-import { useAuth } from "../hooks/useAuth"
+import { useAuth } from "../hooks/useAuth.jsx"
 import { SAMPLE_COMPLAINTS, COMPLAINT_CATEGORIES } from "../data/mockData"
 import Navbar from "../components/Navbar"
 import Footer from "../components/Footer"

@@ -13,7 +13,7 @@ import {
   AlertCircle,
   XCircle,
 } from "lucide-react"
-import { useAuth } from "../hooks/useAuth"
+import { useAuth } from "../hooks/useAuth.jsx"
 import { SAMPLE_COMPLAINTS, COMPLAINT_CATEGORIES } from "../utils/constants"
 import Navbar from "../components/Navbar"
 

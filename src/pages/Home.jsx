@@ -39,14 +39,16 @@ const Home = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
 
-      <section className="bg-gradient-to-br from-primary/5 to-primary/10 py-20">
+      <section className="bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-100 py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h1 className="text-5xl md:text-6xl font-bold text-foreground mb-6">FixBox</h1>
-            <p className="text-xl md:text-2xl text-muted-foreground mb-4 max-w-3xl mx-auto">
+            <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-amber-700 to-orange-600 bg-clip-text text-transparent mb-6">
+              FixBox
+            </h1>
+            <p className="text-xl md:text-2xl text-amber-800 mb-4 max-w-3xl mx-auto">
               Smart Grievance Redressal System for College Campus
             </p>
-            <p className="text-lg text-muted-foreground mb-12 max-w-2xl mx-auto">
+            <p className="text-lg text-amber-700 mb-12 max-w-2xl mx-auto">
               Empowering students and faculty to report, vote, and resolve campus issues through a transparent and
               efficient digital platform.
             </p>
@@ -62,14 +64,14 @@ const Home = () => {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 to="/login"
-                className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-3 rounded-lg font-semibold text-lg transition-colors flex items-center justify-center gap-2"
+                className="bg-gradient-to-r from-amber-700 to-orange-600 hover:from-amber-800 hover:to-orange-700 text-white px-8 py-3 rounded-lg font-semibold text-lg transition-all duration-300 flex items-center justify-center gap-2 shadow-lg"
               >
                 Login to Dashboard
                 <ArrowRight className="w-5 h-5" />
               </Link>
               <Link
                 to="/register"
-                className="border border-primary text-primary hover:bg-primary hover:text-primary-foreground px-8 py-3 rounded-lg font-semibold text-lg transition-colors"
+                className="border-2 border-amber-700 text-amber-700 hover:bg-gradient-to-r hover:from-amber-700 hover:to-orange-600 hover:text-white px-8 py-3 rounded-lg font-semibold text-lg transition-all duration-300 shadow-lg"
               >
                 Create Account
               </Link>
@@ -83,10 +85,12 @@ const Home = () => {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {stats.map((stat, index) => (
               <div key={stat.label} className="text-center">
-                <div className="bg-background rounded-lg p-6 shadow-sm border">
-                  <stat.icon className="w-8 h-8 text-primary mx-auto mb-3" />
-                  <div className="text-3xl font-bold text-foreground mb-2">{stat.value}</div>
-                  <div className="text-muted-foreground">{stat.label}</div>
+                <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-lg p-6 shadow-lg border border-amber-200 hover:shadow-xl transition-shadow duration-300">
+                  <stat.icon className="w-8 h-8 text-amber-700 mx-auto mb-3" />
+                  <div className="text-3xl font-bold bg-gradient-to-r from-amber-700 to-orange-600 bg-clip-text text-transparent mb-2">
+                    {stat.value}
+                  </div>
+                  <div className="text-amber-700">{stat.label}</div>
                 </div>
               </div>
             ))}
@@ -94,11 +98,13 @@ const Home = () => {
         </div>
       </section>
 
-      <section className="py-20">
+      <section className="py-20 bg-gradient-to-br from-orange-50 to-amber-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-foreground mb-4">Why Choose FixBox?</h2>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+            <h2 className="text-4xl font-bold bg-gradient-to-r from-orange-700 to-amber-700 bg-clip-text text-transparent mb-4">
+              Why Choose FixBox?
+            </h2>
+            <p className="text-xl text-amber-800 max-w-3xl mx-auto">
               Our platform revolutionizes campus grievance management with user-centric design and transparent
               processes.
             </p>
@@ -107,9 +113,11 @@ const Home = () => {
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {features.map((feature, index) => (
               <div key={feature.title} className="text-center">
-                <div className="bg-card rounded-lg p-6 shadow-sm border hover:shadow-md transition-shadow">
-                  <div className="w-12 h-12 bg-primary/10 rounded-lg mx-auto mb-4 flex items-center justify-center">
-                    <feature.icon className="w-6 h-6 text-primary" />
+                <div className="bg-card rounded-lg p-6 shadow-lg border border-amber-200 hover:shadow-xl transition-all duration-300 hover:scale-105">
+                  <div
+                    className={`w-12 h-12 ${index % 2 === 0 ? "bg-gradient-to-br from-amber-600 to-amber-700" : "bg-gradient-to-br from-orange-600 to-orange-700"} rounded-lg mx-auto mb-4 flex items-center justify-center shadow-lg`}
+                  >
+                    <feature.icon className="w-6 h-6 text-white" />
                   </div>
                   <h3 className="text-lg font-semibold text-foreground mb-3">{feature.title}</h3>
                   <p className="text-muted-foreground">{feature.description}</p>
@@ -120,20 +128,25 @@ const Home = () => {
         </div>
       </section>
 
-      <section className="py-20 bg-card">
+      <section className="py-20 bg-gradient-to-br from-amber-50 to-yellow-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold text-foreground mb-4">Top Priority Issues</h2>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+            <h2 className="text-4xl font-bold bg-gradient-to-r from-amber-700 to-orange-600 bg-clip-text text-transparent mb-4">
+              Top Priority Issues
+            </h2>
+            <p className="text-xl text-amber-800 max-w-3xl mx-auto">
               These are the most critical issues currently affecting our campus community.
             </p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-6">
             {SAMPLE_COMPLAINTS.slice(0, 3).map((issue, index) => (
-              <div key={issue.id} className="bg-background rounded-lg p-6 shadow-sm border">
+              <div
+                key={issue.id}
+                className="bg-card rounded-lg p-6 shadow-lg border border-amber-200 hover:shadow-xl transition-shadow duration-300"
+              >
                 <div className="flex items-center justify-between mb-4">
-                  <span className="bg-destructive/10 text-destructive px-3 py-1 rounded-full text-sm font-medium">
+                  <span className="bg-gradient-to-r from-red-600 to-red-700 text-white px-3 py-1 rounded-full text-sm font-medium shadow-sm">
                     HIGH PRIORITY
                   </span>
                   <span className="text-sm text-muted-foreground">#{issue.category}</span>
@@ -151,7 +164,7 @@ const Home = () => {
 
                 <div className="bg-muted rounded-full h-2 mt-3">
                   <div
-                    className="h-full bg-primary rounded-full"
+                    className="h-full bg-gradient-to-r from-amber-600 to-orange-600 rounded-full"
                     style={{ width: `${(issue.votes.yes / (issue.votes.yes + issue.votes.no)) * 100}%` }}
                   />
                 </div>
@@ -162,7 +175,7 @@ const Home = () => {
           <div className="text-center mt-8">
             <Link
               to="/dashboard"
-              className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-3 rounded-lg font-semibold transition-colors inline-flex items-center gap-2"
+              className="bg-gradient-to-r from-amber-700 to-orange-600 hover:from-amber-800 hover:to-orange-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300 inline-flex items-center gap-2 shadow-lg"
             >
               Vote on All Issues
               <ArrowRight className="w-5 h-5" />
@@ -171,7 +184,7 @@ const Home = () => {
         </div>
       </section>
 
-      <section className="py-16 bg-primary text-primary-foreground">
+      <section className="py-16 bg-gradient-to-r from-orange-700 to-amber-700 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold mb-4">Trusted by Leading Institutions</h2>
@@ -182,7 +195,10 @@ const Home = () => {
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {COLLEGES.slice(0, 8).map((college, index) => (
-              <div key={college.id} className="bg-primary-foreground/10 rounded-lg p-4 text-center">
+              <div
+                key={college.id}
+                className="bg-white/10 backdrop-blur-sm rounded-lg p-4 text-center border border-white/20 hover:bg-white/20 transition-colors duration-300"
+              >
                 <p className="font-medium text-sm">{college.name}</p>
               </div>
             ))}
@@ -190,23 +206,25 @@ const Home = () => {
         </div>
       </section>
 
-      <section className="py-20">
+      <section className="py-20 bg-gradient-to-br from-yellow-50 via-orange-50 to-amber-50">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-4xl font-bold text-foreground mb-6">Ready to Transform Your Campus?</h2>
-          <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
+          <h2 className="text-4xl font-bold bg-gradient-to-r from-orange-700 to-amber-700 bg-clip-text text-transparent mb-6">
+            Ready to Transform Your Campus?
+          </h2>
+          <p className="text-xl text-amber-800 mb-8 max-w-2xl mx-auto">
             Join the revolution in campus grievance management. Start reporting, voting, and resolving issues today.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               to="/register"
-              className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-3 rounded-lg font-semibold text-lg transition-colors"
+              className="bg-gradient-to-r from-orange-700 to-amber-700 hover:from-orange-800 hover:to-amber-800 text-white px-8 py-3 rounded-lg font-semibold text-lg transition-all duration-300 shadow-lg"
             >
               Get Started Free
             </Link>
             <Link
               to="/login"
-              className="border border-primary text-primary hover:bg-primary hover:text-primary-foreground px-8 py-3 rounded-lg font-semibold text-lg transition-colors"
+              className="border-2 border-orange-700 text-orange-700 hover:bg-gradient-to-r hover:from-orange-700 hover:to-amber-700 hover:text-white px-8 py-3 rounded-lg font-semibold text-lg transition-all duration-300 shadow-lg"
             >
               Sign In
             </Link>

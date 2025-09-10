@@ -3,7 +3,7 @@ import { useState } from "react"
 import { Link, useLocation, useNavigate } from "react-router-dom"
 import { motion } from "framer-motion"
 import { Home, FileText, Plus, User, LogOut, Menu, X, Bell, Settings } from "lucide-react"
-import { useAuth } from "../hooks/useAuth"
+import { useAuth } from "../hooks/useAuth.jsx"
 
 const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
