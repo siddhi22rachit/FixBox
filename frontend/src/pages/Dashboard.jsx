@@ -361,9 +361,9 @@ const Dashboard = () => {
                 />
                 
                 {/* Priority Score Badge */}
-                <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-md text-xs font-medium text-gray-700 border">
+                {/* <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-md text-xs font-medium text-gray-700 border">
                   Score: {calculateWeightedScore(complaint.votes)}
-                </div>
+                </div> */}
                 
                 {(user?.role === "teacher" || user?.role === "admin") && (
                   <button
