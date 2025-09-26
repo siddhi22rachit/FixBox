@@ -1,0 +1,204 @@
+{
+	"info": {
+		"_postman_id": "6487ff0e-2357-4f76-aff5-141d61437c1c",
+		"name": "FixBox",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "32876326",
+		"_collection_link": "https://educase-3294.postman.co/workspace/Team-Workspace~fa48d62b-dac8-422d-8c61-d26fb6b762dc/collection/32876326-6487ff0e-2357-4f76-aff5-141d61437c1c?action=share&source=collection_link&creator=32876326"
+	},
+	"item": [
+		{
+			"name": "user register",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"name\": \"Siddhi Sawant\",\r\n  \"email\": \"siddhi1@example.com\",\r\n  \"password\": \"123456\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5000/api/auth/register",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"auth",
+						"register"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "login user",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \r\n  \"email\": \"siddhi1@example.com\",\r\n  \"password\": \"123456\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5000/api/auth/login",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"auth",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "gravience",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"studentId\": \"68c2861099a6db4f36b45c16\",\r\n  \"title\": \"Broken AC in Computer Lab\",\r\n  \"category\": \"Infrastructure\",\r\n  \"priority\": \"High\",\r\n  \"description\": \"The AC in lab 204 has been broken since last week and it is very uncomfortable.\",\r\n  \"images\": [\"ac_lab204.jpg\"]\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5000/",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "gravience get",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:5000/",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "vote",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"vote\": \"Low\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5000/api/grievances/68c286ae99a6db4f36b45c19/vote",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"grievances",
+						"68c286ae99a6db4f36b45c19",
+						"vote"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "edit",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"title\": \"AC not working in Lab 204\",\r\n  \"description\": \"AC is still broken and causing discomfort.\",\r\n  \"priority\": \"High\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5000/api/grievances/68c286ae99a6db4f36b45c19",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"grievances",
+						"68c286ae99a6db4f36b45c19"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "delete",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"title\": \"AC not working in Lab 204\",\r\n  \"description\": \"AC is still broken and causing discomfort.\",\r\n  \"priority\": \"High\"\r\n}\r\n"
+				},
+				"url": {
+					"raw": "http://localhost:5000/api/grievances/68c286ae99a6db4f36b45c19",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5000",
+					"path": [
+						"api",
+						"grievances",
+						"68c286ae99a6db4f36b45c19"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

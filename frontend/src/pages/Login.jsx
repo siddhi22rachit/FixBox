@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
-import { Eye, EyeOff, Mail, Lock, AlertTriangle, ArrowLeft } from "lucide-react"
+import { Eye, EyeOff, Mail, Lock, ArrowLeft } from "lucide-react"
 import { useAuth } from "../hooks/useAuth.jsx"
 import Footer from "../components/Footer"
 
@@ -37,29 +37,34 @@ const Login = () => {
       return
     }
 
-    if (!formData.email.includes("@") || !formData.email.includes(".edu")) {
-      setError("Please use your college email ID (@college.edu)")
-      setLoading(false)
-      return
-    }
+    try {
+      const response = await fetch("http://localhost:5000/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+        }),
+      })
 
-    setTimeout(() => {
-      const userData = {
-        id: 1,
-        name: "John Doe",
-        email: formData.email,
-        role: formData.email.includes("faculty") ? "teacher" : "student",
-        college: "MIT College of Engineering",
+      const data = await response.json()
+
+      if (!response.ok) {
+        setError(data.message || "Login failed")
+        setLoading(false)
+        return
       }
 
-      login(userData)
+      // Login successful
+      login(data.user)
       navigate("/dashboard")
+    } catch (err) {
+      setError("Network error. Please try again.")
+    } finally {
       setLoading(false)
-    }, 1500)
-  }
-
-  const handleGoogleLogin = () => {
-    setError("Google login will be available soon. Please use your college email for now.")
+    }
   }
 
   return (
@@ -80,23 +85,13 @@ const Login = () => {
               <p className="text-muted-foreground">Sign in to your FixBox account</p>
             </div>
 
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6 flex items-start gap-3">
-              <AlertTriangle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
-              <div className="text-sm">
-                <p className="font-medium text-yellow-800 mb-1">College ID Required</p>
-                <p className="text-yellow-700">
-                  Please use your official college email address to access the platform.
-                </p>
-              </div>
-            </div>
-
             {error && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6 text-red-700 text-sm">{error}</div>
             )}
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-foreground mb-2">College Email</label>
+                <label className="block text-sm font-medium text-foreground mb-2">Email</label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
                   <input
@@ -104,7 +99,7 @@ const Login = () => {
                     name="email"
                     value={formData.email}
                     onChange={handleChange}
-                    placeholder="your.name@college.edu"
+                    placeholder="Enter your email"
                     className="w-full pl-10 pr-4 py-3 border border-input rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent transition-all bg-background"
                     required
                   />
@@ -153,24 +148,6 @@ const Login = () => {
                 ) : (
                   "Sign In"
                 )}
-              </button>
-
-              <div className="relative my-6">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-border" />
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-card text-muted-foreground">Or continue with</span>
-                </div>
-              </div>
-
-              <button
-                type="button"
-                onClick={handleGoogleLogin}
-                className="w-full border border-input hover:bg-accent text-foreground py-3 rounded-lg font-semibold transition-colors flex items-center justify-center gap-3 bg-background"
-              >
-                <img src="/google-logo.png" alt="Google" className="w-5 h-5" />
-                Sign in with Google
               </button>
             </form>
 

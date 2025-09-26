@@ -2,24 +2,19 @@
 import { useState } from "react"
 import { motion } from "framer-motion"
 import { Link, useNavigate } from "react-router-dom"
-import { Eye, EyeOff, User, Mail, Lock, GraduationCap, ArrowLeft, CheckCircle } from "lucide-react"
+import { Eye, EyeOff, User, Mail, Lock, GraduationCap, ArrowLeft } from "lucide-react"
 import { useAuth } from "../hooks/useAuth"
-import { COLLEGES, USER_ROLES } from "../utils/constants"
 
 const Register = () => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     password: "",
-    confirmPassword: "",
     role: "",
-    college: "",
   })
   const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
-  const [step, setStep] = useState(1)
 
   const { register } = useAuth()
   const navigate = useNavigate()
@@ -32,58 +27,54 @@ const Register = () => {
     setError("")
   }
 
-  const handleNextStep = () => {
-    // Validate step 1
-    if (!formData.name || !formData.email || !formData.password || !formData.confirmPassword) {
-      setError("Please fill in all fields")
-      return
-    }
-
-    if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match")
-      return
-    }
-
-    if (formData.password.length < 6) {
-      setError("Password must be at least 6 characters long")
-      return
-    }
-
-    if (!formData.email.includes("@") || !formData.email.includes(".edu")) {
-      setError("Please use your college email ID (@college.edu)")
-      return
-    }
-
-    setStep(2)
-  }
-
   const handleSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
     setError("")
 
-    // Validate step 2
-    if (!formData.role || !formData.college) {
-      setError("Please select your role and college")
+    // Validate required fields
+    if (!formData.name || !formData.email || !formData.password || !formData.role) {
+      setError("Please fill in all fields")
       setLoading(false)
       return
     }
 
-    // Simulate registration process
-    setTimeout(() => {
-      const userData = {
-        id: Date.now(),
-        name: formData.name,
-        email: formData.email,
-        role: formData.role,
-        college: formData.college,
-        createdAt: new Date().toISOString(),
+    if (formData.password.length < 6) {
+      setError("Password must be at least 6 characters long")
+      setLoading(false)
+      return
+    }
+
+    try {
+      const response = await fetch("http://localhost:5000/api/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+          role: formData.role,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        setError(data.message || "Registration failed")
+        setLoading(false)
+        return
       }
 
-      register(userData)
+      // Registration successful
+      register(data.user)
       navigate("/dashboard")
+    } catch (err) {
+      setError("Network error. Please try again.")
+    } finally {
       setLoading(false)
-    }, 1500)
+    }
   }
 
   return (
@@ -124,27 +115,6 @@ const Register = () => {
             </motion.p>
           </div>
 
-          {/* Progress Indicator */}
-          <div className="flex items-center justify-center mb-8">
-            <div className="flex items-center gap-4">
-              <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${
-                  step >= 1 ? "bg-amber-700 text-white" : "bg-muted text-muted-foreground"
-                }`}
-              >
-                {step > 1 ? <CheckCircle className="w-4 h-4" /> : "1"}
-              </div>
-              <div className={`w-12 h-1 rounded ${step >= 2 ? "bg-amber-700" : "bg-muted"}`} />
-              <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${
-                  step >= 2 ? "bg-amber-700 text-white" : "bg-muted text-muted-foreground"
-                }`}
-              >
-                2
-              </div>
-            </div>
-          </div>
-
           {error && (
             <motion.div
               className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 text-red-700 text-sm"
@@ -156,184 +126,118 @@ const Register = () => {
             </motion.div>
           )}
 
-          {step === 1 ? (
-            <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6 }}>
-              <div className="space-y-6">
-                {/* Name Field */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
-                  <div className="relative">
-                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                    <input
-                      type="text"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleChange}
-                      placeholder="Enter your full name"
-                      className="w-full pl-10 pr-4 py-3 border border-input rounded-xl focus:ring-2 focus:ring-ring focus:border-transparent transition-all duration-200 bg-background"
-                      required
-                    />
-                  </div>
-                </div>
-
-                {/* Email Field */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">College Email</label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                    <input
-                      type="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      placeholder="your.name@college.edu"
-                      className="w-full pl-10 pr-4 py-3 border border-input rounded-xl focus:ring-2 focus:ring-ring focus:border-transparent transition-all duration-200 bg-background"
-                      required
-                    />
-                  </div>
-                </div>
-
-                {/* Password Field */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      name="password"
-                      value={formData.password}
-                      onChange={handleChange}
-                      placeholder="Create a password"
-                      className="w-full pl-10 pr-12 py-3 border border-input rounded-xl focus:ring-2 focus:ring-ring focus:border-transparent transition-all duration-200 bg-background"
-                      required
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                    >
-                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                    </button>
-                  </div>
-                </div>
-
-                {/* Confirm Password Field */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Confirm Password</label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                    <input
-                      type={showConfirmPassword ? "text" : "password"}
-                      name="confirmPassword"
-                      value={formData.confirmPassword}
-                      onChange={handleChange}
-                      placeholder="Confirm your password"
-                      className="w-full pl-10 pr-12 py-3 border border-input rounded-xl focus:ring-2 focus:ring-ring focus:border-transparent transition-all duration-200 bg-background"
-                      required
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                    >
-                      {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                    </button>
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={handleNextStep}
-                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground py-3 rounded-xl font-semibold transition-all duration-300"
-                >
-                  Continue
-                </button>
-              </div>
-            </motion.div>
-          ) : (
-            <motion.form
-              onSubmit={handleSubmit}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6 }}
-            >
-              <div className="space-y-6">
-                {/* Role Selection */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">Select Your Role</label>
-                  <div className="grid grid-cols-2 gap-3">
-                    <button
-                      type="button"
-                      onClick={() => setFormData({ ...formData, role: USER_ROLES.STUDENT })}
-                      className={`p-4 rounded-xl border-2 transition-all duration-200 ${
-                        formData.role === USER_ROLES.STUDENT
-                          ? "border-amber-600 bg-amber-50 text-amber-700"
-                          : "border-input hover:border-muted-foreground"
-                      }`}
-                    >
-                      <GraduationCap className="w-6 h-6 mx-auto mb-2" />
-                      <div className="font-semibold">Student</div>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setFormData({ ...formData, role: USER_ROLES.TEACHER })}
-                      className={`p-4 rounded-xl border-2 transition-all duration-200 ${
-                        formData.role === USER_ROLES.TEACHER
-                          ? "border-amber-600 bg-amber-50 text-amber-700"
-                          : "border-input hover:border-muted-foreground"
-                      }`}
-                    >
-                      <User className="w-6 h-6 mx-auto mb-2" />
-                      <div className="font-semibold">Teacher</div>
-                    </button>
-                  </div>
-                </div>
-
-                {/* College Selection */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Select Your College</label>
-                  <select
-                    name="college"
-                    value={formData.college}
+          <motion.form
+            onSubmit={handleSubmit}
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <div className="space-y-6">
+              {/* Name Field */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <input
+                    type="text"
+                    name="name"
+                    value={formData.name}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 border border-input rounded-xl focus:ring-2 focus:ring-ring focus:border-transparent transition-all duration-200 bg-background"
+                    placeholder="Enter your full name"
+                    className="w-full pl-10 pr-4 py-3 border border-input rounded-xl focus:ring-2 focus:ring-ring focus:border-transparent transition-all duration-200 bg-background"
                     required
-                  >
-                    <option value="">Choose your college</option>
-                    {COLLEGES.map((college) => (
-                      <option key={college} value={college}>
-                        {college}
-                      </option>
-                    ))}
-                  </select>
+                  />
                 </div>
+              </div>
 
-                <div className="flex gap-3">
+              {/* Email Field */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    placeholder="Enter your email"
+                    className="w-full pl-10 pr-4 py-3 border border-input rounded-xl focus:ring-2 focus:ring-ring focus:border-transparent transition-all duration-200 bg-background"
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* Password Field */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    placeholder="Create a password"
+                    className="w-full pl-10 pr-12 py-3 border border-input rounded-xl focus:ring-2 focus:ring-ring focus:border-transparent transition-all duration-200 bg-background"
+                    required
+                  />
                   <button
                     type="button"
-                    onClick={() => setStep(1)}
-                    className="flex-1 border border-input hover:border-muted-foreground text-foreground py-3 rounded-xl font-semibold transition-all duration-300"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
                   >
-                    Back
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="flex-1 bg-primary hover:bg-primary/90 disabled:bg-primary/50 text-primary-foreground py-3 rounded-xl font-semibold transition-all duration-300"
-                  >
-                    {loading ? (
-                      <div className="flex items-center justify-center gap-2">
-                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                        Creating...
-                      </div>
-                    ) : (
-                      "Create Account"
-                    )}
+                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
                 </div>
               </div>
-            </motion.form>
-          )}
+
+              {/* Role Selection */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-3">Select Your Role</label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, role: "student" })}
+                    className={`p-4 rounded-xl border-2 transition-all duration-200 ${
+                      formData.role === "student"
+                        ? "border-amber-600 bg-amber-50 text-amber-700"
+                        : "border-input hover:border-muted-foreground"
+                    }`}
+                  >
+                    <GraduationCap className="w-6 h-6 mx-auto mb-2" />
+                    <div className="font-semibold">Student</div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, role: "teacher" })}
+                    className={`p-4 rounded-xl border-2 transition-all duration-200 ${
+                      formData.role === "teacher"
+                        ? "border-amber-600 bg-amber-50 text-amber-700"
+                        : "border-input hover:border-muted-foreground"
+                    }`}
+                  >
+                    <User className="w-6 h-6 mx-auto mb-2" />
+                    <div className="font-semibold">Teacher</div>
+                  </button>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-primary hover:bg-primary/90 disabled:bg-primary/50 text-primary-foreground py-3 rounded-xl font-semibold transition-all duration-300"
+              >
+                {loading ? (
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    Creating Account...
+                  </div>
+                ) : (
+                  "Create Account"
+                )}
+              </button>
+            </div>
+          </motion.form>
 
           {/* Login Link */}
           <motion.div
