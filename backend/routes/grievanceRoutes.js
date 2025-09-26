@@ -1,5 +1,3 @@
-
-
 import express from "express";
 import mongoose from "mongoose";
 import Grievance from "../models/Grievance.js";
@@ -81,6 +79,30 @@ router.get("/", async (req, res) => {
 });
 
 /**
+ * @route   GET /api/grievances/:id
+ * @desc    Get a single grievance by ID
+ */
+router.get("/:id", async (req, res) => {
+  try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ message: "Invalid grievance ID format" });
+    }
+
+    const grievance = await Grievance.findById(req.params.id)
+      .populate("studentId", "name email");
+
+    if (!grievance) {
+      return res.status(404).json({ message: "Grievance not found" });
+    }
+
+    res.json(grievance);
+  } catch (error) {
+    console.error("Error fetching grievance:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+});
+
+/**
  * @route   GET /api/grievances/user/:userId
  * @desc    Get grievances by user
  */
@@ -130,6 +152,39 @@ router.post("/:id/vote", async (req, res) => {
     res.json({ message: "Vote counted", votes: grievance.votes });
   } catch (error) {
     console.error("Error voting on grievance:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+});
+
+/**
+ * @route   PUT /api/grievances/:id/status
+ * @desc    Update grievance status (for admin use)
+ */
+router.put("/:id/status", async (req, res) => {
+  try {
+    const { status } = req.body;
+    
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ message: "Invalid grievance ID format" });
+    }
+
+    const grievance = await Grievance.findById(req.params.id);
+
+    if (!grievance) {
+      return res.status(404).json({ message: "Grievance not found" });
+    }
+
+    if (!["pending", "reviewed", "resolved", "rejected"].includes(status)) {
+      return res.status(400).json({ message: "Invalid status. Use pending, reviewed, resolved, or rejected" });
+    }
+
+    grievance.status = status;
+    grievance.updatedAt = new Date();
+    await grievance.save();
+    
+    res.json({ message: "Status updated successfully", grievance });
+  } catch (error) {
+    console.error("Error updating grievance status:", error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 });

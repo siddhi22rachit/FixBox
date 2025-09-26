@@ -340,11 +340,11 @@ const Dashboard = () => {
         <div className="grid lg:grid-cols-2 gap-6 mb-8">
           {displayedComplaints.length > 0 ? (
             displayedComplaints.map((complaint, index) => (
-              <div key={complaint._id} className="relative">
-                {/* Priority Rank Badge */}
+              <div key={complaint._id} className="relative group">
+                {/* Priority Rank Badge - Improved positioning */}
                 {!showAllComplaints && index < 4 && (
-                  <div className="absolute -top-2 -left-2 z-10">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold ${
+                  <div className="absolute -top-3 -left-3 z-20">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold shadow-lg border-2 border-white ${
                       index === 0 ? 'bg-red-500' : 
                       index === 1 ? 'bg-orange-500' : 
                       index === 2 ? 'bg-amber-500' : 'bg-blue-500'
@@ -354,43 +354,65 @@ const Dashboard = () => {
                   </div>
                 )}
                 
-                <ComplaintCard
-                  complaint={complaint}
-                  onVote={handleVote}
-                  showVoting={user?.role === "student" || user?.role === "teacher"}
-                />
-                
-                {/* Priority Score Badge */}
-                <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-md text-xs font-medium text-gray-700 border">
-                  Score: {calculateWeightedScore(complaint.votes)}
+                {/* Card Container with improved styling */}
+                <div className="relative overflow-hidden rounded-lg">
+                  <ComplaintCard
+                    complaint={complaint}
+                    onVote={handleVote}
+                    showVoting={user?.role === "student" || user?.role === "teacher"}
+                  />
+                  
+                  {/* Priority Score Badge - Better positioned */}
+                  <div className="absolute top-3 right-16 z-10">
+                    <div className="bg-gradient-to-r from-slate-800 to-slate-600 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-lg border border-slate-500/20 backdrop-blur-sm">
+                      <span className="text-slate-300">Score:</span> {calculateWeightedScore(complaint.votes)}
+                    </div>
+                  </div>
+                  
+                  {/* Delete Button - Improved styling and positioning */}
+                  {(user?.role === "teacher" || user?.role === "admin") && (
+                    <div className="absolute top-3 right-3 z-10">
+                      <button
+                        onClick={() => handleDelete(complaint._id)}
+                        className="bg-red-500 hover:bg-red-600 text-white p-2 rounded-full shadow-lg transition-all duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 active:scale-95 border border-red-400/20"
+                        disabled={deletingId === complaint._id}
+                        title="Delete Grievance"
+                      >
+                        {deletingId === complaint._id ? (
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        ) : (
+                          <Trash2 className="w-4 h-4" />
+                        )}
+                      </button>
+                    </div>
+                  )}
                 </div>
-                
-                {(user?.role === "teacher" || user?.role === "admin") && (
-                  <button
-                    onClick={() => handleDelete(complaint._id)}
-                    className="absolute top-4 right-4 bg-red-500 hover:bg-red-600 text-white p-2 rounded-full shadow-md transition-colors flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
-                    disabled={deletingId === complaint._id}
-                    title="Delete Grievance"
-                  >
-                    {deletingId === complaint._id ? (
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    ) : (
-                      <Trash2 className="w-4 h-4" />
-                    )}
-                  </button>
-                )}
+
+                {/* Hover effect overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 rounded-lg pointer-events-none"></div>
               </div>
             ))
           ) : (
             <div className="lg:col-span-2 text-center py-12">
-              <p className="text-muted-foreground">
-                {searchQuery ? "No issues match your search." : "No issues to display."}
-              </p>
-              {searchQuery && (
-                <button onClick={clearSearch} className="text-primary hover:text-primary/80 font-semibold mt-4">
-                  Clear search
-                </button>
-              )}
+              <div className="bg-card rounded-xl p-8 shadow-sm border">
+                <AlertCircle className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+                <p className="text-lg font-medium text-foreground mb-2">
+                  {searchQuery ? "No issues match your search" : "No issues to display"}
+                </p>
+                <p className="text-muted-foreground mb-4">
+                  {searchQuery 
+                    ? "Try adjusting your search terms or clear the search to see all issues." 
+                    : "There are currently no issues reported. Check back later or report a new issue."}
+                </p>
+                {searchQuery && (
+                  <button 
+                    onClick={clearSearch} 
+                    className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2 rounded-lg font-semibold transition-colors"
+                  >
+                    Clear Search
+                  </button>
+                )}
+              </div>
             </div>
           )}
         </div>
@@ -400,7 +422,7 @@ const Dashboard = () => {
           <div className="text-center">
             <button
               onClick={() => setShowAllComplaints(true)}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-4 rounded-lg font-semibold transition-colors"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-4 rounded-lg font-semibold transition-all duration-200 hover:scale-105 active:scale-95 shadow-lg"
             >
               View All {filteredComplaints.length} Issues
             </button>
@@ -411,7 +433,7 @@ const Dashboard = () => {
           <div className="text-center mt-8">
             <button
               onClick={() => setShowAllComplaints(false)}
-              className="bg-card hover:bg-accent text-foreground px-8 py-4 rounded-lg font-semibold border transition-colors"
+              className="bg-card hover:bg-accent text-foreground px-8 py-4 rounded-lg font-semibold border transition-all duration-200 hover:scale-105 active:scale-95 shadow-lg"
             >
               Back to Top 4 Issues
             </button>
