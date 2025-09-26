@@ -1,6 +1,6 @@
 "use client"
 import { useState } from "react"
-import { Calendar, User, Tag, TrendingUp, CheckCircle, XCircle, Clock, AlertCircle } from "lucide-react"
+import { Calendar, User, Tag, TrendingUp, CheckCircle, XCircle, Clock, AlertCircle, AlertTriangle } from "lucide-react"
 
 const StatusTag = ({ status }) => {
   const getStatusConfig = () => {
@@ -53,75 +53,100 @@ const VotingButtons = ({ complaint, onVote }) => {
   const [isVoting, setIsVoting] = useState(false)
 
   const handleVote = async (voteType) => {
-    if (isVoting) return
+    if (isVoting || userVote) return
 
     setIsVoting(true)
-    setTimeout(() => {
+    
+    try {
+      await onVote(complaint._id, voteType)
       setUserVote(voteType)
-      onVote(complaint.id, voteType)
+    } catch (error) {
+      console.error("Error voting:", error)
+    } finally {
       setIsVoting(false)
-    }, 500)
+    }
   }
 
-  const totalVotes = complaint.votes.yes + complaint.votes.no
-  const yesPercentage = totalVotes > 0 ? (complaint.votes.yes / totalVotes) * 100 : 0
-  const noPercentage = totalVotes > 0 ? (complaint.votes.no / totalVotes) * 100 : 0
+  const totalVotes = (complaint.votes.Low || 0) + (complaint.votes.Medium || 0) + (complaint.votes.High || 0)
+  const highPercentage = totalVotes > 0 ? ((complaint.votes.High || 0) / totalVotes) * 100 : 0
+  const mediumPercentage = totalVotes > 0 ? ((complaint.votes.Medium || 0) / totalVotes) * 100 : 0
+  const lowPercentage = totalVotes > 0 ? ((complaint.votes.Low || 0) / totalVotes) * 100 : 0
 
   return (
     <div className="space-y-4">
-      <div className="flex gap-3">
+      <div className="grid grid-cols-3 gap-2">
         <button
-          onClick={() => handleVote("yes")}
+          onClick={() => handleVote("High")}
           disabled={isVoting || userVote}
-          className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-medium text-sm transition-all duration-200 ${
-            userVote === "yes"
+          className={`flex flex-col items-center justify-center gap-2 py-3 px-3 rounded-lg font-medium text-xs transition-all duration-200 ${
+            userVote === "High"
+              ? "bg-red-600 text-white"
+              : userVote
+                ? "bg-gray-100 text-gray-500 cursor-not-allowed"
+                : "bg-red-50 text-red-700 border border-red-200 hover:bg-red-100"
+          }`}
+        >
+          <AlertTriangle className="w-4 h-4" />
+          {isVoting && userVote !== "High" ? "Voting..." : "🚨 High"}
+        </button>
+
+        <button
+          onClick={() => handleVote("Medium")}
+          disabled={isVoting || userVote}
+          className={`flex flex-col items-center justify-center gap-2 py-3 px-3 rounded-lg font-medium text-xs transition-all duration-200 ${
+            userVote === "Medium"
+              ? "bg-orange-600 text-white"
+              : userVote
+                ? "bg-gray-100 text-gray-500 cursor-not-allowed"
+                : "bg-orange-50 text-orange-700 border border-orange-200 hover:bg-orange-100"
+          }`}
+        >
+          <AlertCircle className="w-4 h-4" />
+          {isVoting && userVote !== "Medium" ? "Voting..." : "⚠️ Medium"}
+        </button>
+
+        <button
+          onClick={() => handleVote("Low")}
+          disabled={isVoting || userVote}
+          className={`flex flex-col items-center justify-center gap-2 py-3 px-3 rounded-lg font-medium text-xs transition-all duration-200 ${
+            userVote === "Low"
               ? "bg-green-600 text-white"
-              : userVote === "no"
+              : userVote
                 ? "bg-gray-100 text-gray-500 cursor-not-allowed"
                 : "bg-green-50 text-green-700 border border-green-200 hover:bg-green-100"
           }`}
         >
           <CheckCircle className="w-4 h-4" />
-          {isVoting && userVote !== "yes" ? "Voting..." : "👍 Serious Issue"}
-        </button>
-
-        <button
-          onClick={() => handleVote("no")}
-          disabled={isVoting || userVote}
-          className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-medium text-sm transition-all duration-200 ${
-            userVote === "no"
-              ? "bg-red-600 text-white"
-              : userVote === "yes"
-                ? "bg-gray-100 text-gray-500 cursor-not-allowed"
-                : "bg-red-50 text-red-700 border border-red-200 hover:bg-red-100"
-          }`}
-        >
-          <XCircle className="w-4 h-4" />
-          {isVoting && userVote !== "no" ? "Voting..." : "👎 Not Priority"}
+          {isVoting && userVote !== "Low" ? "Voting..." : "✅ Low"}
         </button>
       </div>
 
       <div className="space-y-3">
         <div className="flex justify-between text-sm font-medium text-gray-700">
-          <span>Campus Community ({totalVotes} votes)</span>
-          <span className="text-amber-700">{yesPercentage.toFixed(0)}% agree</span>
+          <span>Priority Votes ({totalVotes} total)</span>
+          <span className="text-red-700">{highPercentage.toFixed(0)}% high priority</span>
         </div>
 
         <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
           <div className="flex h-full">
-            <div className="bg-green-500 transition-all duration-500" style={{ width: `${yesPercentage}%` }} />
-            <div className="bg-red-500 transition-all duration-500" style={{ width: `${noPercentage}%` }} />
+            <div className="bg-red-500 transition-all duration-500" style={{ width: `${highPercentage}%` }} />
+            <div className="bg-orange-500 transition-all duration-500" style={{ width: `${mediumPercentage}%` }} />
+            <div className="bg-green-500 transition-all duration-500" style={{ width: `${lowPercentage}%` }} />
           </div>
         </div>
 
-        <div className="flex justify-between text-sm">
-          <span className="flex items-center gap-2 text-green-600">
-            <div className="w-2 h-2 bg-green-500 rounded-full" />
-            {complaint.votes.yes} Agree
-          </span>
+        <div className="flex justify-between text-xs">
           <span className="flex items-center gap-2 text-red-600">
             <div className="w-2 h-2 bg-red-500 rounded-full" />
-            {complaint.votes.no} Disagree
+            {complaint.votes.High || 0} High
+          </span>
+          <span className="flex items-center gap-2 text-orange-600">
+            <div className="w-2 h-2 bg-orange-500 rounded-full" />
+            {complaint.votes.Medium || 0} Medium
+          </span>
+          <span className="flex items-center gap-2 text-green-600">
+            <div className="w-2 h-2 bg-green-500 rounded-full" />
+            {complaint.votes.Low || 0} Low
           </span>
         </div>
       </div>
@@ -129,10 +154,14 @@ const VotingButtons = ({ complaint, onVote }) => {
       {userVote && (
         <div
           className={`text-center text-sm font-medium py-2 px-4 rounded-lg ${
-            userVote === "yes" ? "bg-green-50 text-green-800" : "bg-red-50 text-red-800"
+            userVote === "High" 
+              ? "bg-red-50 text-red-800" 
+              : userVote === "Medium"
+                ? "bg-orange-50 text-orange-800"
+                : "bg-green-50 text-green-800"
           }`}
         >
-          Thanks for your vote! Your voice helps improve our campus.
+          Thanks for rating this as {userVote} priority! Your voice helps improve our campus.
         </div>
       )}
     </div>
@@ -149,12 +178,22 @@ const ComplaintCard = ({ complaint, onVote, showVoting = true, compact = false }
   }
 
   const getPriorityColor = () => {
-    const totalVotes = complaint.votes.yes + complaint.votes.no
-    const yesPercentage = totalVotes > 0 ? (complaint.votes.yes / totalVotes) * 100 : 0
+    const totalVotes = (complaint.votes.Low || 0) + (complaint.votes.Medium || 0) + (complaint.votes.High || 0)
+    const highPercentage = totalVotes > 0 ? ((complaint.votes.High || 0) / totalVotes) * 100 : 0
 
-    if (yesPercentage >= 80) return "text-red-600"
-    if (yesPercentage >= 60) return "text-orange-600"
+    if (highPercentage >= 60) return "text-red-600"
+    if (highPercentage >= 30) return "text-orange-600"
     return "text-amber-600"
+  }
+
+  const getPriorityLevel = () => {
+    const totalVotes = (complaint.votes.Low || 0) + (complaint.votes.Medium || 0) + (complaint.votes.High || 0)
+    if (totalVotes === 0) return complaint.priority || "Medium"
+    
+    const maxVotes = Math.max(complaint.votes.Low || 0, complaint.votes.Medium || 0, complaint.votes.High || 0)
+    if (maxVotes === (complaint.votes.High || 0)) return "High"
+    if (maxVotes === (complaint.votes.Medium || 0)) return "Medium"
+    return "Low"
   }
 
   return (
@@ -167,11 +206,11 @@ const ComplaintCard = ({ complaint, onVote, showVoting = true, compact = false }
           <div className="flex items-center gap-4 text-sm text-muted-foreground mb-3">
             <div className="flex items-center gap-1.5">
               <User className="w-4 h-4" />
-              <span>{complaint.submittedBy}</span>
+              <span>{complaint.submittedBy || 'Student'}</span>
             </div>
             <div className="flex items-center gap-1.5">
               <Calendar className="w-4 h-4" />
-              <span>{formatDate(complaint.submittedAt)}</span>
+              <span>{formatDate(complaint.submittedAt || complaint.createdAt)}</span>
             </div>
           </div>
         </div>
@@ -182,7 +221,7 @@ const ComplaintCard = ({ complaint, onVote, showVoting = true, compact = false }
             className={`flex items-center gap-1.5 text-xs font-medium px-2 py-1 rounded-md bg-amber-50 ${getPriorityColor()}`}
           >
             <TrendingUp className="w-3 h-3" />
-            High Priority
+            {getPriorityLevel()} Priority
           </div>
         </div>
       </div>
@@ -207,9 +246,9 @@ const ComplaintCard = ({ complaint, onVote, showVoting = true, compact = false }
       {compact && (
         <div className="flex items-center justify-between pt-4 border-t border-border">
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
-            <span>{complaint.votes.yes + complaint.votes.no} votes</span>
+            <span>{(complaint.votes.Low || 0) + (complaint.votes.Medium || 0) + (complaint.votes.High || 0)} votes</span>
             <span className="text-primary">
-              {Math.round((complaint.votes.yes / (complaint.votes.yes + complaint.votes.no)) * 100)}% support
+              {getPriorityLevel()} Priority
             </span>
           </div>
           <button className="bg-primary text-primary-foreground px-4 py-2 rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors">
