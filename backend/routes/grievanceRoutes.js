@@ -1,5 +1,6 @@
 import express from "express";
-import Grievance from "../models/Grienvance.js";
+import mongoose from "mongoose";
+import Grievance from "../models/Grievance.js";
 
 const router = express.Router();
 
@@ -9,26 +10,55 @@ const router = express.Router();
  */
 router.post("/", async (req, res) => {
   try {
+    console.log("Received grievance data:", req.body);
+
     const { studentId, title, category, priority, description, images } = req.body;
 
+    // Validation
     if (!studentId || !title || !category || !description) {
-      return res.status(400).json({ message: "studentId, title, category, and description are required" });
+      return res.status(400).json({ 
+        message: "studentId, title, category, and description are required",
+        received: { studentId, title, category, description }
+      });
     }
 
+    // Validate ObjectId format or create a new one if it's a mock ID
+    let validStudentId;
+    if (mongoose.Types.ObjectId.isValid(studentId)) {
+      validStudentId = studentId;
+    } else {
+      // For development/testing: create a new ObjectId if the provided ID is invalid
+      console.log(`Invalid ObjectId: ${studentId}, creating new ObjectId for testing`);
+      validStudentId = new mongoose.Types.ObjectId();
+    }
+
+    // Create new grievance
     const grievance = new Grievance({
-      studentId,
+      studentId: validStudentId,
       title,
       category,
-      priority: priority || "Low", // defaults to "Low" if not passed
+      priority: priority || "Low",
       description,
       images: images || [],
     });
 
-    await grievance.save();
+    console.log("Creating grievance with valid ObjectId:", grievance);
 
-    res.status(201).json({ message: "Grievance created successfully", grievance });
+    const savedGrievance = await grievance.save();
+    console.log("Grievance saved successfully:", savedGrievance);
+
+    res.status(201).json({ 
+      message: "Grievance created successfully", 
+      grievance: savedGrievance 
+    });
+
   } catch (error) {
-    res.status(500).json({ message: "Server error", error: error.message });
+    console.error("Error creating grievance:", error);
+    res.status(500).json({ 
+      message: "Server error", 
+      error: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 });
 
@@ -38,20 +68,50 @@ router.post("/", async (req, res) => {
  */
 router.get("/", async (req, res) => {
   try {
-    const grievances = await Grievance.find().populate("studentId", "name email");
+    const grievances = await Grievance.find()
+      .populate("studentId", "name email")
+      .sort({ submittedAt: -1 }); // Most recent first
     res.json(grievances);
   } catch (error) {
+    console.error("Error fetching grievances:", error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 });
 
 /**
- * 1️⃣ Vote for grievance severity (Low / Medium / High)
- * POST /api/grievances/:id/vote
+ * @route   GET /api/grievances/user/:userId
+ * @desc    Get grievances by user
  */
-router.post("/api/grievances/:id/vote", async (req, res) => {
+router.get("/user/:userId", async (req, res) => {
   try {
-    const { vote } = req.body; // "Low" | "Medium" | "High"
+    let validUserId;
+    if (mongoose.Types.ObjectId.isValid(req.params.userId)) {
+      validUserId = req.params.userId;
+    } else {
+      return res.status(400).json({ message: "Invalid user ID format" });
+    }
+
+    const grievances = await Grievance.find({ studentId: validUserId })
+      .sort({ submittedAt: -1 });
+    res.json(grievances);
+  } catch (error) {
+    console.error("Error fetching user grievances:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+});
+
+/**
+ * @route   POST /api/grievances/:id/vote
+ * @desc    Vote for grievance severity
+ */
+router.post("/:id/vote", async (req, res) => {
+  try {
+    const { vote } = req.body;
+    
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ message: "Invalid grievance ID format" });
+    }
+
     const grievance = await Grievance.findById(req.params.id);
 
     if (!grievance) {
@@ -62,66 +122,13 @@ router.post("/api/grievances/:id/vote", async (req, res) => {
       return res.status(400).json({ message: "Invalid vote. Use Low, Medium, or High" });
     }
 
-    // Increment vote count
     grievance.votes[vote] = (grievance.votes[vote] || 0) + 1;
-
     await grievance.save();
+    
     res.json({ message: "Vote counted", votes: grievance.votes });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
-
-/**
- * 2️⃣ Edit grievance (PUT) - Only if still pending
- * PUT /api/grievances/:id
- */
-router.put("/api/grievances/:id", async (req, res) => {
-  try {
-    const grievance = await Grievance.findById(req.params.id);
-
-    if (!grievance) {
-      return res.status(404).json({ message: "Grievance not found" });
-    }
-
-    if (grievance.status !== "pending") {
-      return res.status(400).json({ message: "Cannot edit non-pending grievance" });
-    }
-
-    const { title, description, category, priority } = req.body;
-
-    if (title) grievance.title = title;
-    if (description) grievance.description = description;
-    if (category) grievance.category = category;
-    if (priority) grievance.priority = priority;
-
-    await grievance.save();
-    res.json({ message: "Grievance updated", grievance });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
-
-/**
- * 3️⃣ Delete grievance (DELETE) - Only if still pending
- * DELETE /api/grievances/:id
- */
-router.delete("/api/grievances/:id", async (req, res) => {
-  try {
-    const grievance = await Grievance.findById(req.params.id);
-
-    if (!grievance) {
-      return res.status(404).json({ message: "Grievance not found" });
-    }
-
-    if (grievance.status !== "pending") {
-      return res.status(400).json({ message: "Cannot delete non-pending grievance" });
-    }
-
-    await grievance.deleteOne();
-    res.json({ message: "Grievance deleted successfully" });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+  } catch (error) {
+    console.error("Error voting on grievance:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 });
 

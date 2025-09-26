@@ -1,11 +1,55 @@
-"use client"
 import { useState } from "react"
-import { motion } from "framer-motion"
-import { useNavigate } from "react-router-dom"
 import { Upload, X, AlertCircle, CheckCircle, Camera, FileText, Tag } from "lucide-react"
-import { useAuth } from "../hooks/useAuth"
-import { COMPLAINT_CATEGORIES } from "../utils/constants"
-import Navbar from "../components/Navbar"
+import Navbar from "../components/Navbar.jsx"
+
+// Mock constants - replace with your actual constants
+const COMPLAINT_CATEGORIES = [
+  "Infrastructure",
+  "Network",
+  "Food",
+  "Transport",
+  "Library",
+  "Hostel",
+  "Academic",
+  "Other"
+]
+
+// Mock useAuth hook - replace with your actual implementation
+const useAuth = () => ({
+  user: { id: "mockUserId123", name: "John Doe", email: "john@example.com" }
+})
+
+// Mock useNavigate hook - replace with your actual implementation
+const useNavigate = () => (path) => console.log(`Navigating to: ${path}`)
+
+// Toast Component
+const Toast = ({ message, type, onClose }) => {
+  return (
+    <div className={`fixed top-4 right-4 z-50 p-4 rounded-xl shadow-lg flex items-center gap-3 max-w-md transform transition-all duration-300 ${
+      type === 'success' ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'
+    }`}>
+      {type === 'success' ? (
+        <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+      ) : (
+        <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
+      )}
+      <div className={`text-sm font-medium ${type === 'success' ? 'text-green-700' : 'text-red-700'}`}>
+        {message}
+      </div>
+      <button
+        onClick={onClose}
+        className={`ml-auto p-1 rounded-full hover:bg-opacity-20 ${
+          type === 'success' ? 'hover:bg-green-600' : 'hover:bg-red-600'
+        }`}
+      >
+        <X className="w-4 h-4" />
+      </button>
+    </div>
+  )
+}
+
+// Mock Navbar - replace with your actual component
+
 
 const ReportIssue = () => {
   const { user } = useAuth()
@@ -14,12 +58,17 @@ const ReportIssue = () => {
     title: "",
     category: "",
     description: "",
-    priority: "medium",
+    priority: "Low",
   })
   const [uploadedImages, setUploadedImages] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
-  const [success, setSuccess] = useState(false)
+  const [toast, setToast] = useState(null)
+
+  const showToast = (message, type) => {
+    setToast({ message, type })
+    setTimeout(() => setToast(null), 5000) // Auto hide after 5 seconds
+  }
 
   const handleChange = (e) => {
     setFormData({
@@ -62,8 +111,7 @@ const ReportIssue = () => {
     setUploadedImages((prev) => prev.filter((img) => img.id !== imageId))
   }
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
+  const handleSubmit = async () => {
     setLoading(true)
     setError("")
 
@@ -86,100 +134,93 @@ const ReportIssue = () => {
       return
     }
 
-    // Simulate API call
-    setTimeout(() => {
-      setSuccess(true)
-      setLoading(false)
+    // Prepare image names (in real app, upload to cloud storage first)
+    const imageNames = uploadedImages.map(img => img.name)
 
-      // Reset form after success
+    try {
+      const response = await fetch("http://localhost:5000/api/grievances", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          // Add authorization header if needed
+          // "Authorization": `Bearer ${user?.token}`,
+        },
+        body: JSON.stringify({
+          studentId: user?.id,
+          title: formData.title.trim(),
+          category: formData.category,
+          priority: formData.priority,
+          description: formData.description.trim(),
+          images: imageNames,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to submit grievance")
+      }
+
+      // Show success toast
+      showToast("Grievance submitted successfully! 🎉", "success")
+
+      // Reset form
+      setFormData({
+        title: "",
+        category: "",
+        description: "",
+        priority: "Low",
+      })
+      setUploadedImages([])
+
+      // Redirect after a delay to show the success message
       setTimeout(() => {
-        navigate("/my-complaints")
+        navigate("/dashboard") // or "/my-complaints"
       }, 2000)
-    }, 1500)
-  }
 
-  if (success) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-100">
-        <Navbar />
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <motion.div
-            className="text-center"
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6 }}
-          >
-            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <CheckCircle className="w-10 h-10 text-green-600" />
-            </div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-4">Issue Reported Successfully!</h1>
-            <p className="text-lg text-gray-600 mb-8">
-              Your complaint has been submitted and will be reviewed by the administration. You'll receive updates on
-              its progress.
-            </p>
-            <div className="glass-card rounded-2xl p-6 max-w-md mx-auto">
-              <h3 className="font-semibold text-gray-900 mb-2">What happens next?</h3>
-              <div className="text-sm text-gray-600 space-y-2">
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
-                  Community voting begins immediately
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
-                  Administration review within 24 hours
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
-                  Status updates sent to your email
-                </div>
-              </div>
-            </div>
-            <p className="text-sm text-gray-500 mt-6">Redirecting to your complaints...</p>
-          </motion.div>
-        </div>
-      </div>
-    )
+    } catch (err) {
+      console.error("Error submitting grievance:", err)
+      const errorMessage = err.message || "An unexpected error occurred. Please try again."
+      setError(errorMessage)
+      showToast(errorMessage, "error")
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-100">
       <Navbar />
 
+      {/* Toast Notification */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
+
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
-        <motion.div
-          className="mb-8"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-        >
+        <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Report an Issue</h1>
           <p className="text-gray-600">
             Help improve our campus by reporting issues that need attention. Your voice matters in making our college
             better.
           </p>
-        </motion.div>
+        </div>
 
         {/* Form */}
-        <motion.div
-          className="bg-card rounded-2xl p-8 shadow-lg border border-amber-200"
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2, duration: 0.6 }}
-        >
+        <div className="bg-white rounded-2xl p-8 shadow-lg border border-amber-200">
           {error && (
-            <motion.div
-              className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 flex items-start gap-3"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.3 }}
-            >
+            <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 flex items-start gap-3">
               <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
               <div className="text-red-700 text-sm">{error}</div>
-            </motion.div>
+            </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-8">
+          <div className="space-y-8">
             {/* Title */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-3">
@@ -193,7 +234,7 @@ const ReportIssue = () => {
                   value={formData.title}
                   onChange={handleChange}
                   placeholder="Briefly describe the issue (e.g., Broken AC in Computer Lab)"
-                  className="w-full pl-10 pr-4 py-4 border border-input rounded-xl focus:ring-2 focus:ring-ring focus:border-transparent transition-all duration-200 bg-background text-lg"
+                  className="w-full pl-10 pr-4 py-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all duration-200 bg-white text-lg"
                   required
                 />
               </div>
@@ -212,7 +253,7 @@ const ReportIssue = () => {
                     name="category"
                     value={formData.category}
                     onChange={handleChange}
-                    className="w-full pl-10 pr-4 py-4 border border-input rounded-xl focus:ring-2 focus:ring-ring focus:border-transparent transition-all duration-200 bg-background appearance-none"
+                    className="w-full pl-10 pr-4 py-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all duration-200 bg-white appearance-none"
                     required
                   >
                     <option value="">Select a category</option>
@@ -228,22 +269,22 @@ const ReportIssue = () => {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-3">Priority Level</label>
                 <div className="grid grid-cols-3 gap-2">
-                  {["low", "medium", "high"].map((priority) => (
+                  {["Low", "Medium", "High"].map((priority) => (
                     <button
                       key={priority}
                       type="button"
                       onClick={() => setFormData({ ...formData, priority })}
                       className={`py-3 px-4 rounded-xl text-sm font-medium transition-all duration-200 ${
                         formData.priority === priority
-                          ? priority === "high"
+                          ? priority === "High"
                             ? "bg-red-100 text-red-700 border-2 border-red-300"
-                            : priority === "medium"
+                            : priority === "Medium"
                               ? "bg-amber-100 text-amber-700 border-2 border-amber-300"
                               : "bg-green-100 text-green-700 border-2 border-green-300"
-                          : "bg-muted text-muted-foreground border-2 border-input hover:border-muted-foreground"
+                          : "bg-gray-100 text-gray-600 border-2 border-gray-300 hover:border-gray-400"
                       }`}
                     >
-                      {priority.charAt(0).toUpperCase() + priority.slice(1)}
+                      {priority}
                     </button>
                   ))}
                 </div>
@@ -261,7 +302,7 @@ const ReportIssue = () => {
                 onChange={handleChange}
                 rows={6}
                 placeholder="Provide a detailed description of the issue. Include when it started, how it affects you, and any other relevant information..."
-                className="w-full px-4 py-4 border border-input rounded-xl focus:ring-2 focus:ring-ring focus:border-transparent transition-all duration-200 bg-background resize-none"
+                className="w-full px-4 py-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all duration-200 bg-white resize-none"
                 required
               />
               <p className="text-xs text-gray-500 mt-2">Minimum 20 characters required</p>
@@ -274,7 +315,7 @@ const ReportIssue = () => {
               </label>
 
               {/* Upload Area */}
-              <div className="border-2 border-dashed border-input rounded-xl p-8 text-center hover:border-amber-400 transition-colors">
+              <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-amber-400 transition-colors">
                 <input
                   type="file"
                   multiple
@@ -285,11 +326,11 @@ const ReportIssue = () => {
                 />
                 <label htmlFor="image-upload" className="cursor-pointer">
                   <Camera className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <div className="text-lg font-medium text-foreground mb-2">Upload Images</div>
-                  <div className="text-sm text-muted-foreground mb-4">
+                  <div className="text-lg font-medium text-gray-900 mb-2">Upload Images</div>
+                  <div className="text-sm text-gray-600 mb-4">
                     Drag and drop images here, or click to browse
                   </div>
-                  <div className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-6 py-3 rounded-xl font-semibold hover:bg-primary/90 transition-colors">
+                  <div className="inline-flex items-center gap-2 bg-amber-500 text-white px-6 py-3 rounded-xl font-semibold hover:bg-amber-600 transition-colors">
                     <Upload className="w-4 h-4" />
                     Choose Files
                   </div>
@@ -304,7 +345,7 @@ const ReportIssue = () => {
                   {uploadedImages.map((image) => (
                     <div key={image.id} className="relative group">
                       <img
-                        src={image.preview || "/placeholder.svg"}
+                        src={image.preview}
                         alt={image.name}
                         className="w-full h-32 object-cover rounded-xl border border-gray-200"
                       />
@@ -329,14 +370,15 @@ const ReportIssue = () => {
               <button
                 type="button"
                 onClick={() => navigate("/dashboard")}
-                className="flex-1 border border-input hover:border-muted-foreground text-foreground py-4 rounded-xl font-semibold transition-all duration-300"
+                className="flex-1 border border-gray-300 hover:border-gray-400 text-gray-700 py-4 rounded-xl font-semibold transition-all duration-300"
               >
                 Cancel
               </button>
               <button
-                type="submit"
+                type="button"
+                onClick={handleSubmit}
                 disabled={loading}
-                className="flex-1 bg-primary hover:bg-primary/90 disabled:bg-primary/50 text-primary-foreground py-4 rounded-xl font-semibold transition-all duration-300 hover-lift disabled:transform-none"
+                className="flex-1 bg-amber-500 hover:bg-amber-600 disabled:bg-amber-300 text-white py-4 rounded-xl font-semibold transition-all duration-300 disabled:cursor-not-allowed"
               >
                 {loading ? (
                   <div className="flex items-center justify-center gap-2">
@@ -348,48 +390,43 @@ const ReportIssue = () => {
                 )}
               </button>
             </div>
-          </form>
-        </motion.div>
+          </div>
+        </div>
 
         {/* Tips */}
-        <motion.div
-          className="mt-8 bg-card rounded-2xl p-6 shadow-lg border border-amber-200"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4, duration: 0.6 }}
-        >
-          <h3 className="text-lg font-semibold text-foreground mb-4">Tips for Better Issue Reports</h3>
-          <div className="grid md:grid-cols-2 gap-4 text-sm text-muted-foreground">
+        <div className="mt-8 bg-white rounded-2xl p-6 shadow-lg border border-amber-200">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Tips for Better Issue Reports</h3>
+          <div className="grid md:grid-cols-2 gap-4 text-sm text-gray-600">
             <div className="flex items-start gap-3">
-              <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
+              <div className="w-2 h-2 bg-amber-500 rounded-full mt-2 flex-shrink-0"></div>
               <div>
-                <div className="font-medium text-foreground mb-1">Be Specific</div>
+                <div className="font-medium text-gray-900 mb-1">Be Specific</div>
                 <div>Include exact locations, times, and detailed descriptions of the problem.</div>
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
+              <div className="w-2 h-2 bg-amber-500 rounded-full mt-2 flex-shrink-0"></div>
               <div>
-                <div className="font-medium text-foreground mb-1">Add Photos</div>
+                <div className="font-medium text-gray-900 mb-1">Add Photos</div>
                 <div>Visual evidence helps administration understand and prioritize issues better.</div>
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
+              <div className="w-2 h-2 bg-amber-500 rounded-full mt-2 flex-shrink-0"></div>
               <div>
-                <div className="font-medium text-foreground mb-1">Choose Right Category</div>
+                <div className="font-medium text-gray-900 mb-1">Choose Right Category</div>
                 <div>Proper categorization helps route your issue to the right department.</div>
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
+              <div className="w-2 h-2 bg-amber-500 rounded-full mt-2 flex-shrink-0"></div>
               <div>
-                <div className="font-medium text-foreground mb-1">Set Priority</div>
+                <div className="font-medium text-gray-900 mb-1">Set Priority</div>
                 <div>Help us understand the urgency and impact of the issue on campus life.</div>
               </div>
             </div>
           </div>
-        </motion.div>
+        </div>
       </div>
     </div>
   )

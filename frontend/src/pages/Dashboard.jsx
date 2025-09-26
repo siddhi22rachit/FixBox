@@ -1,32 +1,60 @@
+// --- START OF FILE Dashboard.jsx ---
+
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Search, Filter, ChevronDown, TrendingUp, Users, CheckCircle, Clock } from "lucide-react"
 import { useAuth } from "../hooks/useAuth.jsx"
-import { SAMPLE_COMPLAINTS, COMPLAINT_CATEGORIES } from "../data/mockData"
+// import { SAMPLE_COMPLAINTS, COMPLAINT_CATEGORIES } from "../data/mockData" // Removed mock data import
+import { COMPLAINT_CATEGORIES } from "../utils/constants" // Assuming categories are here or a similar constants file
 import Navbar from "../components/Navbar"
 import Footer from "../components/Footer"
 import ComplaintCard from "../components/ComplaintCard"
 
 const Dashboard = () => {
   const { user } = useAuth()
-  const [complaints, setComplaints] = useState(SAMPLE_COMPLAINTS)
-  const [filteredComplaints, setFilteredComplaints] = useState(SAMPLE_COMPLAINTS)
+  const [complaints, setComplaints] = useState([]) // Initialize as empty array
+  const [filteredComplaints, setFilteredComplaints] = useState([])
   const [showAllComplaints, setShowAllComplaints] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("")
   const [selectedStatus, setSelectedStatus] = useState("")
   const [showFilters, setShowFilters] = useState(false)
+  const [loading, setLoading] = useState(true) // Loading state for initial fetch
+  const [error, setError] = useState(null) // Error state for fetch
+
+  // Function to fetch grievances from the API
+  const fetchGrievances = useCallback(async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const response = await fetch("http://localhost:5000/api/grievances");
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      setComplaints(data);
+    } catch (err) {
+      console.error("Error fetching grievances:", err);
+      setError("Failed to load issues. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    let filtered = complaints
+    fetchGrievances();
+  }, [fetchGrievances]);
+
+  useEffect(() => {
+    let filtered = complaints;
 
     if (searchQuery) {
       filtered = filtered.filter(
         (complaint) =>
           complaint.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
           complaint.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          complaint.submittedBy.toLowerCase().includes(searchQuery.toLowerCase()),
+          complaint.studentId?.name?.toLowerCase().includes(searchQuery.toLowerCase()), // Search by student name
       )
     }
 
@@ -38,36 +66,55 @@ const Dashboard = () => {
       filtered = filtered.filter((complaint) => complaint.status === selectedStatus)
     }
 
+    // Sort: High priority first, then Medium, then Low. Within same priority, by most total votes.
     filtered.sort((a, b) => {
-      const aPercentage = (a.votes.yes / (a.votes.yes + a.votes.no)) * 100
-      const bPercentage = (b.votes.yes / (b.votes.yes + b.votes.no)) * 100
-      return bPercentage - aPercentage
-    })
+      const priorityOrder = { "High": 3, "Medium": 2, "Low": 1 };
+      const aP = priorityOrder[a.priority] || 0;
+      const bP = priorityOrder[b.priority] || 0;
+
+      if (aP !== bP) {
+        return bP - aP; // Sort by priority descending
+      }
+
+      // If priorities are equal, sort by total votes descending
+      const aTotalVotes = (a.votes.Low || 0) + (a.votes.Medium || 0) + (a.votes.High || 0);
+      const bTotalVotes = (b.votes.Low || 0) + (b.votes.Medium || 0) + (b.votes.High || 0);
+      return bTotalVotes - aTotalVotes;
+    });
 
     setFilteredComplaints(filtered)
   }, [complaints, searchQuery, selectedCategory, selectedStatus])
 
-  const handleVote = (complaintId, voteType) => {
-    setComplaints((prev) =>
-      prev.map((complaint) => {
-        if (complaint.id === complaintId) {
-          return {
-            ...complaint,
-            votes: {
-              ...complaint.votes,
-              [voteType]: complaint.votes[voteType] + 1,
-            },
-          }
-        }
-        return complaint
-      }),
-    )
+  const handleVote = async (complaintId, voteType) => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/grievances/${complaintId}/vote`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          // Add authorization header if your API requires it
+          // "Authorization": `Bearer ${user?.token}`, 
+        },
+        body: JSON.stringify({ vote: voteType }), // Send the vote type (Low, Medium, High)
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to cast vote: ${response.statusText}`);
+      }
+
+      // After successful vote, refetch grievances to update the UI
+      fetchGrievances();
+
+    } catch (err) {
+      console.error("Error casting vote:", err);
+      setError("Failed to cast vote. Please try again.");
+    }
   }
 
   const clearFilters = () => {
     setSearchQuery("")
     setSelectedCategory("")
     setSelectedStatus("")
+    setShowFilters(false); // Close filters after clearing
   }
 
   const topComplaints = filteredComplaints.slice(0, 3)
@@ -76,7 +123,42 @@ const Dashboard = () => {
   const totalComplaints = complaints.length
   const resolvedComplaints = complaints.filter((c) => c.status === "resolved").length
   const pendingComplaints = complaints.filter((c) => c.status === "pending").length
-  const totalVotes = complaints.reduce((sum, c) => sum + c.votes.yes + c.votes.no, 0)
+  
+  // Calculate total votes across all priority levels
+  const totalVotes = complaints.reduce((sum, c) => 
+    sum + (c.votes.Low || 0) + (c.votes.Medium || 0) + (c.votes.High || 0), 0
+  );
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="flex flex-col items-center">
+          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
+          <p className="text-lg text-muted-foreground">Loading campus issues...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 text-center">
+          <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+          <h1 className="text-2xl font-bold text-foreground mb-2">Error Loading Issues</h1>
+          <p className="text-muted-foreground mb-6">{error}</p>
+          <button
+            onClick={fetchGrievances}
+            className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-3 rounded-lg font-semibold transition-colors"
+          >
+            Retry
+          </button>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -84,7 +166,7 @@ const Dashboard = () => {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">Welcome back, {user?.name}!</h1>
+          <h1 className="text-3xl font-bold text-foreground mb-2">Welcome back, {user?.name || "User"}!</h1>
           <p className="text-muted-foreground">
             {user?.role === "teacher"
               ? "Monitor and manage campus issues reported by students."
@@ -163,7 +245,7 @@ const Dashboard = () => {
             </p>
           </div>
 
-          {!showAllComplaints && (
+          {!showAllComplaints && (filteredComplaints.length > 3 || complaints.length > 3) && ( // Ensure "View All" button only appears if there are more than 3
             <button
               onClick={() => setShowAllComplaints(true)}
               className="bg-card hover:bg-accent text-foreground px-6 py-3 rounded-lg font-semibold flex items-center gap-2 border shadow-sm transition-colors"
@@ -223,9 +305,9 @@ const Dashboard = () => {
                 >
                   <option value="">All Status</option>
                   <option value="pending">Pending</option>
-                  <option value="in-progress">In Progress</option>
+                  <option value="reviewed">Reviewed</option> {/* Updated from "in-progress" */}
                   <option value="resolved">Resolved</option>
-                  <option value="rejected">Rejected</option>
+                  {/* You might want a 'rejected' status if your backend supports it, but currently not in schema */}
                 </select>
 
                 <button
@@ -240,16 +322,28 @@ const Dashboard = () => {
         )}
 
         <div className="grid lg:grid-cols-2 gap-6 mb-8">
-          {displayedComplaints.map((complaint) => (
-            <ComplaintCard
-              key={complaint.id}
-              complaint={complaint}
-              onVote={handleVote}
-              showVoting={user?.role === "student" || user?.role === "teacher"}
-            />
-          ))}
+          {displayedComplaints.length > 0 ? (
+            displayedComplaints.map((complaint) => (
+              <ComplaintCard
+                key={complaint._id} // Use _id from MongoDB
+                complaint={complaint}
+                onVote={handleVote}
+                showVoting={user?.role === "student" || user?.role === "teacher"} // Ensure user role is defined if checking this
+              />
+            ))
+          ) : (
+            <div className="lg:col-span-2 text-center py-12">
+              <p className="text-muted-foreground">No issues to display.</p>
+              {showAllComplaints && (searchQuery || selectedCategory || selectedStatus) && (
+                <button onClick={clearFilters} className="text-primary hover:text-primary/80 font-semibold mt-4">
+                  Clear all filters
+                </button>
+              )}
+            </div>
+          )}
         </div>
 
+        {/* This button should only appear if not all complaints are shown and there are more than 3 */}
         {!showAllComplaints && filteredComplaints.length > 3 && (
           <div className="text-center">
             <button
@@ -271,15 +365,6 @@ const Dashboard = () => {
             </button>
           </div>
         )}
-
-        {filteredComplaints.length === 0 && (
-          <div className="text-center py-12">
-            <div className="text-muted-foreground mb-4">No issues found matching your criteria.</div>
-            <button onClick={clearFilters} className="text-primary hover:text-primary/80 font-semibold">
-              Clear all filters
-            </button>
-          </div>
-        )}
       </div>
 
       <Footer />
@@ -288,3 +373,4 @@ const Dashboard = () => {
 }
 
 export default Dashboard
+// --- END OF FILE Dashboard.jsx ---
