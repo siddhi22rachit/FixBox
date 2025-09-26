@@ -1,28 +1,19 @@
+
+"use client" // Added 'use client' directive for Next.js 13+ if applicable
+
 import { useState } from "react"
 import { Upload, X, AlertCircle, CheckCircle, Camera, FileText, Tag } from "lucide-react"
-import Navbar from "../components/Navbar.jsx"
+import { useNavigate } from "react-router-dom" // Correct import for useNavigate
+import { useAuth } from "../hooks/useAuth" // Correct import for useAuth
 
-// Mock constants - replace with your actual constants
-const COMPLAINT_CATEGORIES = [
-  "Infrastructure",
-  "Network",
-  "Food",
-  "Transport",
-  "Library",
-  "Hostel",
-  "Academic",
-  "Other"
-]
+import Navbar from "../components/Navbar"
+import Footer from "../components/Footer" // Assuming you have a Footer component
 
-// Mock useAuth hook - replace with your actual implementation
-const useAuth = () => ({
-  user: { id: "mockUserId123", name: "John Doe", email: "john@example.com" }
-})
+// Mock constants - import from your actual constants file
+import { COMPLAINT_CATEGORIES } from "../utils/constants"
 
-// Mock useNavigate hook - replace with your actual implementation
-const useNavigate = () => (path) => console.log(`Navigating to: ${path}`)
 
-// Toast Component
+// Toast Component - this component is self-contained and correct
 const Toast = ({ message, type, onClose }) => {
   return (
     <div className={`fixed top-4 right-4 z-50 p-4 rounded-xl shadow-lg flex items-center gap-3 max-w-md transform transition-all duration-300 ${
@@ -39,8 +30,8 @@ const Toast = ({ message, type, onClose }) => {
       <button
         onClick={onClose}
         className={`ml-auto p-1 rounded-full hover:bg-opacity-20 ${
-          type === 'success' ? 'hover:bg-green-600' : 'hover:bg-red-600'
-        }`}
+          type === 'success' ? 'hover:bg-green-600 text-green-600' : 'hover:bg-red-600 text-red-600'
+        } focus:outline-none`} // Added focus:outline-none for accessibility
       >
         <X className="w-4 h-4" />
       </button>
@@ -48,93 +39,127 @@ const Toast = ({ message, type, onClose }) => {
   )
 }
 
-// Mock Navbar - replace with your actual component
-
 
 const ReportIssue = () => {
-  const { user } = useAuth()
-  const navigate = useNavigate()
+  const { user } = useAuth() // Get the logged-in user from your auth hook
+  const navigate = useNavigate() // Hook for navigation
+
   const [formData, setFormData] = useState({
     title: "",
     category: "",
     description: "",
-    priority: "Low",
+    priority: "Low", // Default priority
   })
   const [uploadedImages, setUploadedImages] = useState([])
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState("")
-  const [toast, setToast] = useState(null)
+  const [error, setError] = useState("") // General form error message
+  const [toast, setToast] = useState(null) // Toast notification state
 
+  // Function to show toast messages
   const showToast = (message, type) => {
     setToast({ message, type })
-    setTimeout(() => setToast(null), 5000) // Auto hide after 5 seconds
+    setTimeout(() => setToast(null), 5000) // Auto-hide after 5 seconds
   }
 
+  // Handle input changes for form fields
   const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     })
-    setError("")
+    setError("") // Clear general error when user starts typing
   }
 
+  // Handle image file uploads
   const handleImageUpload = (e) => {
     const files = Array.from(e.target.files)
+    if (files.length === 0) return; // No files selected
+
+    // Check total number of images
     if (files.length + uploadedImages.length > 3) {
-      setError("You can upload maximum 3 images")
+      setError("You can upload a maximum of 3 images.")
       return
     }
 
-    files.forEach((file) => {
-      if (file.size > 5 * 1024 * 1024) {
-        setError("Each image must be less than 5MB")
-        return
-      }
+    let filesToProcess = [];
+    let uploadErrors = [];
 
+    files.forEach((file) => {
+      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        uploadErrors.push(`${file.name} exceeds 5MB limit.`);
+      } else if (!file.type.startsWith('image/')) {
+        uploadErrors.push(`${file.name} is not an image file.`);
+      }
+      else {
+        filesToProcess.push(file);
+      }
+    });
+
+    if (uploadErrors.length > 0) {
+      setError(uploadErrors.join(' ')); // Display all upload-related errors
+      return;
+    }
+
+
+    filesToProcess.forEach((file) => {
       const reader = new FileReader()
       reader.onload = (e) => {
         setUploadedImages((prev) => [
           ...prev,
           {
-            id: Date.now() + Math.random(),
+            id: Date.now() + Math.random(), // Unique ID for key prop
             file,
-            preview: e.target.result,
+            preview: e.target.result, // Data URL for image preview
             name: file.name,
           },
         ])
       }
       reader.readAsDataURL(file)
     })
+
+     // Clear file input value to allow re-uploading same file if needed
+     e.target.value = null;
   }
 
+  // Remove an uploaded image by its ID
   const removeImage = (imageId) => {
     setUploadedImages((prev) => prev.filter((img) => img.id !== imageId))
   }
 
+  // Handle form submission
   const handleSubmit = async () => {
     setLoading(true)
-    setError("")
+    setError("") // Clear previous errors
 
-    // Validation
+    // --- Frontend Validation ---
     if (!formData.title.trim() || !formData.category || !formData.description.trim()) {
-      setError("Please fill in all required fields")
+      setError("Please fill in all required fields (Title, Category, Description).")
       setLoading(false)
       return
     }
 
-    if (formData.title.length < 10) {
-      setError("Title must be at least 10 characters long")
+    if (formData.title.trim().length < 10) {
+      setError("Title must be at least 10 characters long.")
       setLoading(false)
       return
     }
 
-    if (formData.description.length < 20) {
-      setError("Description must be at least 20 characters long")
+    if (formData.description.trim().length < 20) {
+      setError("Description must be at least 20 characters long.")
       setLoading(false)
       return
     }
 
-    // Prepare image names (in real app, upload to cloud storage first)
+    // Ensure user is logged in (user object and its _id are available)
+    if (!user || !user._id) {
+      setError("You must be logged in to report an issue. Please log in.")
+      setLoading(false)
+      return
+    }
+
+    // Prepare image names (in a real application, you'd upload actual image files
+    // to a cloud storage service like Cloudinary, S3, Firebase Storage, etc.,
+    // and then send the URLs here. For this example, we're just sending filenames).
     const imageNames = uploadedImages.map(img => img.name)
 
     try {
@@ -142,57 +167,59 @@ const ReportIssue = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          // Add authorization header if needed
-          // "Authorization": `Bearer ${user?.token}`,
+          // Add authorization header if your backend requires it (e.g., JWT token)
+          // "Authorization": `Bearer ${user?.token}`, // Assuming token is on the user object
         },
         body: JSON.stringify({
-          studentId: user?.id,
+          studentId: user._id, // *** CRUCIAL: Use the actual MongoDB _id from the logged-in user ***
           title: formData.title.trim(),
           category: formData.category,
           priority: formData.priority,
           description: formData.description.trim(),
-          images: imageNames,
+          images: imageNames, // Sending filenames, adjust if you upload URLs
         }),
       })
 
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.message || "Failed to submit grievance")
+        // If response is not OK, it's an error from the server
+        throw new Error(data.message || "Failed to submit grievance. Please try again.")
       }
 
-      // Show success toast
+      // If successful, show success toast
       showToast("Grievance submitted successfully! 🎉", "success")
 
-      // Reset form
+      // Reset form fields
       setFormData({
         title: "",
         category: "",
         description: "",
         priority: "Low",
       })
-      setUploadedImages([])
+      setUploadedImages([]) // Clear uploaded images
 
-      // Redirect after a delay to show the success message
+      // Redirect to the "My Complaints" page after a short delay
       setTimeout(() => {
-        navigate("/dashboard") // or "/my-complaints"
-      }, 2000)
+        navigate("/my-complaints")
+      }, 2000) // Give user time to see the success message
 
     } catch (err) {
       console.error("Error submitting grievance:", err)
-      const errorMessage = err.message || "An unexpected error occurred. Please try again."
+      // Display error message from the caught error
+      const errorMessage = err.message || "An unexpected error occurred. Please try again later."
       setError(errorMessage)
       showToast(errorMessage, "error")
     } finally {
-      setLoading(false)
+      setLoading(false) // Always stop loading, regardless of success or failure
     }
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-100">
-      <Navbar />
+    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-100 flex flex-col">
+      <Navbar /> {/* Your Navbar component */}
 
-      {/* Toast Notification */}
+      {/* Toast Notification will appear fixed at the top-right */}
       {toast && (
         <Toast
           message={toast.message}
@@ -201,8 +228,8 @@ const ReportIssue = () => {
         />
       )}
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
+      <main className="flex-grow max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header Section */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Report an Issue</h1>
           <p className="text-gray-600">
@@ -211,8 +238,9 @@ const ReportIssue = () => {
           </p>
         </div>
 
-        {/* Form */}
+        {/* Main Form Card */}
         <div className="bg-white rounded-2xl p-8 shadow-lg border border-amber-200">
+          {/* General Error Message Display */}
           {error && (
             <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 flex items-start gap-3">
               <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
@@ -221,15 +249,16 @@ const ReportIssue = () => {
           )}
 
           <div className="space-y-8">
-            {/* Title */}
+            {/* Issue Title Input */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3">
+              <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-3">
                 Issue Title <span className="text-red-500">*</span>
               </label>
               <div className="relative">
                 <FileText className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                 <input
                   type="text"
+                  id="title"
                   name="title"
                   value={formData.title}
                   onChange={handleChange}
@@ -241,15 +270,17 @@ const ReportIssue = () => {
               <p className="text-xs text-gray-500 mt-2">Minimum 10 characters required</p>
             </div>
 
-            {/* Category and Priority */}
+            {/* Category and Priority Selection */}
             <div className="grid md:grid-cols-2 gap-6">
+              {/* Category Select */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-3">
+                <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-3">
                   Category <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                   <Tag className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                   <select
+                    id="category"
                     name="category"
                     value={formData.category}
                     onChange={handleChange}
@@ -266,6 +297,7 @@ const ReportIssue = () => {
                 </div>
               </div>
 
+              {/* Priority Buttons */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-3">Priority Level</label>
                 <div className="grid grid-cols-3 gap-2">
@@ -291,12 +323,13 @@ const ReportIssue = () => {
               </div>
             </div>
 
-            {/* Description */}
+            {/* Detailed Description Textarea */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3">
+              <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-3">
                 Detailed Description <span className="text-red-500">*</span>
               </label>
               <textarea
+                id="description"
                 name="description"
                 value={formData.description}
                 onChange={handleChange}
@@ -308,18 +341,18 @@ const ReportIssue = () => {
               <p className="text-xs text-gray-500 mt-2">Minimum 20 characters required</p>
             </div>
 
-            {/* Image Upload */}
+            {/* Image Upload Section */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-3">
                 Supporting Images <span className="text-gray-500">(Optional)</span>
               </label>
 
-              {/* Upload Area */}
+              {/* Drag and Drop / Click to Upload Area */}
               <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-amber-400 transition-colors">
                 <input
                   type="file"
                   multiple
-                  accept="image/*"
+                  accept="image/jpeg,image/png,image/gif" // Specify accepted image types
                   onChange={handleImageUpload}
                   className="hidden"
                   id="image-upload"
@@ -339,7 +372,7 @@ const ReportIssue = () => {
 
               <p className="text-xs text-gray-500 mt-2">Maximum 3 images, 5MB each. Supported: JPG, PNG, GIF</p>
 
-              {/* Uploaded Images */}
+              {/* Display of Uploaded Images */}
               {uploadedImages.length > 0 && (
                 <div className="mt-6 grid grid-cols-2 md:grid-cols-3 gap-4">
                   {uploadedImages.map((image) => (
@@ -353,6 +386,7 @@ const ReportIssue = () => {
                         type="button"
                         onClick={() => removeImage(image.id)}
                         className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
+                        aria-label={`Remove image ${image.name}`}
                       >
                         <X className="w-3 h-3" />
                       </button>
@@ -365,11 +399,11 @@ const ReportIssue = () => {
               )}
             </div>
 
-            {/* Submit Button */}
+            {/* Form Action Buttons */}
             <div className="flex gap-4 pt-6 border-t border-gray-200">
               <button
                 type="button"
-                onClick={() => navigate("/dashboard")}
+                onClick={() => navigate("/my-complaints")} // Navigate back to MyComplaints or a dashboard
                 className="flex-1 border border-gray-300 hover:border-gray-400 text-gray-700 py-4 rounded-xl font-semibold transition-all duration-300"
               >
                 Cancel
@@ -377,7 +411,7 @@ const ReportIssue = () => {
               <button
                 type="button"
                 onClick={handleSubmit}
-                disabled={loading}
+                disabled={loading} // Disable button when loading
                 className="flex-1 bg-amber-500 hover:bg-amber-600 disabled:bg-amber-300 text-white py-4 rounded-xl font-semibold transition-all duration-300 disabled:cursor-not-allowed"
               >
                 {loading ? (
@@ -393,7 +427,7 @@ const ReportIssue = () => {
           </div>
         </div>
 
-        {/* Tips */}
+        {/* Tips for Better Issue Reports Section */}
         <div className="mt-8 bg-white rounded-2xl p-6 shadow-lg border border-amber-200">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Tips for Better Issue Reports</h3>
           <div className="grid md:grid-cols-2 gap-4 text-sm text-gray-600">
@@ -427,7 +461,9 @@ const ReportIssue = () => {
             </div>
           </div>
         </div>
-      </div>
+      </main>
+
+      <Footer /> {/* Your Footer component */}
     </div>
   )
 }
