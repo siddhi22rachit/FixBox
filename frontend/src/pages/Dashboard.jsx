@@ -203,31 +203,7 @@ const Dashboard = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-card rounded-lg p-6 text-center shadow-sm border">
-            <TrendingUp className="w-8 h-8 text-primary mx-auto mb-3" />
-            <div className="text-2xl font-bold text-foreground mb-1">{totalComplaints}</div>
-            <div className="text-sm text-muted-foreground">Total Issues</div>
-          </div>
-
-          <div className="bg-card rounded-lg p-6 text-center shadow-sm border">
-            <CheckCircle className="w-8 h-8 text-green-600 mx-auto mb-3" />
-            <div className="text-2xl font-bold text-foreground mb-1">{resolvedComplaints}</div>
-            <div className="text-sm text-muted-foreground">Resolved</div>
-          </div>
-
-          <div className="bg-card rounded-lg p-6 text-center shadow-sm border">
-            <Clock className="w-8 h-8 text-yellow-600 mx-auto mb-3" />
-            <div className="text-2xl font-bold text-foreground mb-1">{pendingComplaints}</div>
-            <div className="text-sm text-muted-foreground">Pending</div>
-          </div>
-
-          <div className="bg-card rounded-lg p-6 text-center shadow-sm border">
-            <Users className="w-8 h-8 text-purple-600 mx-auto mb-3" />
-            <div className="text-2xl font-bold text-foreground mb-1">{totalVotes}</div>
-            <div className="text-sm text-muted-foreground">Total Votes</div>
-          </div>
-        </div>
+       
 
         <div className="bg-card rounded-lg p-6 mb-8 shadow-sm border">
           <h2 className="text-lg font-semibold text-foreground mb-3">How It Works</h2>
