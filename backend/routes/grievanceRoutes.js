@@ -1,3 +1,5 @@
+
+
 import express from "express";
 import mongoose from "mongoose";
 import Grievance from "../models/Grievance.js";
@@ -128,6 +130,29 @@ router.post("/:id/vote", async (req, res) => {
     res.json({ message: "Vote counted", votes: grievance.votes });
   } catch (error) {
     console.error("Error voting on grievance:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+});
+
+/**
+ * @route   DELETE /api/grievances/:id
+ * @desc    Delete a grievance
+ */
+router.delete("/:id", async (req, res) => {
+  try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ message: "Invalid grievance ID format" });
+    }
+
+    const grievance = await Grievance.findByIdAndDelete(req.params.id);
+
+    if (!grievance) {
+      return res.status(404).json({ message: "Grievance not found" });
+    }
+
+    res.json({ message: "Grievance deleted successfully", grievanceId: req.params.id });
+  } catch (error) {
+    console.error("Error deleting grievance:", error);
     res.status(500).json({ message: "Server error", error: error.message });
   }
 });

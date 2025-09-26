@@ -1,27 +1,29 @@
+
+
 // --- START OF FILE Dashboard.jsx ---
 
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import { Search, Filter, ChevronDown, TrendingUp, Users, CheckCircle, Clock } from "lucide-react"
+import { Search, Filter, ChevronDown, TrendingUp, Users, CheckCircle, Clock, AlertCircle, Trash2 } from "lucide-react" // Added Trash2
 import { useAuth } from "../hooks/useAuth.jsx"
-// import { SAMPLE_COMPLAINTS, COMPLAINT_CATEGORIES } from "../data/mockData" // Removed mock data import
-import { COMPLAINT_CATEGORIES } from "../utils/constants" // Assuming categories are here or a similar constants file
+import { COMPLAINT_CATEGORIES } from "../utils/constants"
 import Navbar from "../components/Navbar"
 import Footer from "../components/Footer"
 import ComplaintCard from "../components/ComplaintCard"
 
 const Dashboard = () => {
   const { user } = useAuth()
-  const [complaints, setComplaints] = useState([]) // Initialize as empty array
+  const [complaints, setComplaints] = useState([])
   const [filteredComplaints, setFilteredComplaints] = useState([])
   const [showAllComplaints, setShowAllComplaints] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("")
   const [selectedStatus, setSelectedStatus] = useState("")
   const [showFilters, setShowFilters] = useState(false)
-  const [loading, setLoading] = useState(true) // Loading state for initial fetch
-  const [error, setError] = useState(null) // Error state for fetch
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [deletingId, setDeletingId] = useState(null); // To track which grievance is being deleted
 
   // Function to fetch grievances from the API
   const fetchGrievances = useCallback(async () => {
@@ -54,7 +56,7 @@ const Dashboard = () => {
         (complaint) =>
           complaint.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
           complaint.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          complaint.studentId?.name?.toLowerCase().includes(searchQuery.toLowerCase()), // Search by student name
+          complaint.studentId?.name?.toLowerCase().includes(searchQuery.toLowerCase()),
       )
     }
 
@@ -66,17 +68,15 @@ const Dashboard = () => {
       filtered = filtered.filter((complaint) => complaint.status === selectedStatus)
     }
 
-    // Sort: High priority first, then Medium, then Low. Within same priority, by most total votes.
     filtered.sort((a, b) => {
       const priorityOrder = { "High": 3, "Medium": 2, "Low": 1 };
       const aP = priorityOrder[a.priority] || 0;
       const bP = priorityOrder[b.priority] || 0;
 
       if (aP !== bP) {
-        return bP - aP; // Sort by priority descending
+        return bP - aP;
       }
 
-      // If priorities are equal, sort by total votes descending
       const aTotalVotes = (a.votes.Low || 0) + (a.votes.Medium || 0) + (a.votes.High || 0);
       const bTotalVotes = (b.votes.Low || 0) + (b.votes.Medium || 0) + (b.votes.High || 0);
       return bTotalVotes - aTotalVotes;
@@ -86,27 +86,57 @@ const Dashboard = () => {
   }, [complaints, searchQuery, selectedCategory, selectedStatus])
 
   const handleVote = async (complaintId, voteType) => {
+    setError(null); // Clear previous errors
     try {
       const response = await fetch(`http://localhost:5000/api/grievances/${complaintId}/vote`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          // Add authorization header if your API requires it
           // "Authorization": `Bearer ${user?.token}`, 
         },
-        body: JSON.stringify({ vote: voteType }), // Send the vote type (Low, Medium, High)
+        body: JSON.stringify({ vote: voteType }),
       });
 
       if (!response.ok) {
         throw new Error(`Failed to cast vote: ${response.statusText}`);
       }
 
-      // After successful vote, refetch grievances to update the UI
-      fetchGrievances();
-
+      fetchGrievances(); // Refetch to update UI
     } catch (err) {
       console.error("Error casting vote:", err);
       setError("Failed to cast vote. Please try again.");
+    }
+  }
+
+  const handleDelete = async (complaintId) => {
+    if (!window.confirm("Are you sure you want to delete this grievance? This action cannot be undone.")) {
+      return;
+    }
+
+    setDeletingId(complaintId); // Set ID to show loading state for this specific card
+    setError(null); // Clear previous errors
+
+    try {
+      const response = await fetch(`http://localhost:5000/api/grievances/${complaintId}`, {
+        method: "DELETE",
+        headers: {
+          // "Authorization": `Bearer ${user?.token}`, // Add authorization if needed
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `Failed to delete grievance: ${response.statusText}`);
+      }
+
+      // If successful, remove the grievance from the state
+      setComplaints(prevComplaints => prevComplaints.filter(c => c._id !== complaintId));
+      console.log(`Grievance ${complaintId} deleted successfully.`);
+    } catch (err) {
+      console.error("Error deleting grievance:", err);
+      setError(err.message || "Failed to delete grievance. Please try again.");
+    } finally {
+      setDeletingId(null); // Clear deleting state
     }
   }
 
@@ -114,7 +144,7 @@ const Dashboard = () => {
     setSearchQuery("")
     setSelectedCategory("")
     setSelectedStatus("")
-    setShowFilters(false); // Close filters after clearing
+    setShowFilters(false);
   }
 
   const topComplaints = filteredComplaints.slice(0, 3)
@@ -124,7 +154,6 @@ const Dashboard = () => {
   const resolvedComplaints = complaints.filter((c) => c.status === "resolved").length
   const pendingComplaints = complaints.filter((c) => c.status === "pending").length
   
-  // Calculate total votes across all priority levels
   const totalVotes = complaints.reduce((sum, c) => 
     sum + (c.votes.Low || 0) + (c.votes.Medium || 0) + (c.votes.High || 0), 0
   );
@@ -140,7 +169,7 @@ const Dashboard = () => {
     );
   }
 
-  if (error) {
+  if (error && !deletingId) { // Only show global error if not specifically deleting
     return (
       <div className="min-h-screen bg-background">
         <Navbar />
@@ -245,7 +274,7 @@ const Dashboard = () => {
             </p>
           </div>
 
-          {!showAllComplaints && (filteredComplaints.length > 3 || complaints.length > 3) && ( // Ensure "View All" button only appears if there are more than 3
+          {!showAllComplaints && (filteredComplaints.length > 3 || complaints.length > 3) && (
             <button
               onClick={() => setShowAllComplaints(true)}
               className="bg-card hover:bg-accent text-foreground px-6 py-3 rounded-lg font-semibold flex items-center gap-2 border shadow-sm transition-colors"
@@ -305,9 +334,8 @@ const Dashboard = () => {
                 >
                   <option value="">All Status</option>
                   <option value="pending">Pending</option>
-                  <option value="reviewed">Reviewed</option> {/* Updated from "in-progress" */}
+                  <option value="reviewed">Reviewed</option>
                   <option value="resolved">Resolved</option>
-                  {/* You might want a 'rejected' status if your backend supports it, but currently not in schema */}
                 </select>
 
                 <button
@@ -321,15 +349,37 @@ const Dashboard = () => {
           </div>
         )}
 
+        {error && deletingId && ( // Display specific delete error if present
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+            <strong className="font-bold">Error deleting grievance: </strong>
+            <span className="block sm:inline">{error}</span>
+          </div>
+        )}
+
         <div className="grid lg:grid-cols-2 gap-6 mb-8">
           {displayedComplaints.length > 0 ? (
             displayedComplaints.map((complaint) => (
-              <ComplaintCard
-                key={complaint._id} // Use _id from MongoDB
-                complaint={complaint}
-                onVote={handleVote}
-                showVoting={user?.role === "student" || user?.role === "teacher"} // Ensure user role is defined if checking this
-              />
+              <div key={complaint._id} className="relative">
+                <ComplaintCard
+                  complaint={complaint}
+                  onVote={handleVote}
+                  showVoting={user?.role === "student" || user?.role === "teacher"}
+                />
+                {(user?.role === "teacher" || user?.role === "admin") && ( // Only show delete for teacher/admin
+                  <button
+                    onClick={() => handleDelete(complaint._id)}
+                    className="absolute top-4 right-4 bg-red-500 hover:bg-red-600 text-white p-2 rounded-full shadow-md transition-colors flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={deletingId === complaint._id} // Disable button while deleting
+                    title="Delete Grievance"
+                  >
+                    {deletingId === complaint._id ? (
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    ) : (
+                      <Trash2 className="w-4 h-4" />
+                    )}
+                  </button>
+                )}
+              </div>
             ))
           ) : (
             <div className="lg:col-span-2 text-center py-12">
@@ -343,7 +393,6 @@ const Dashboard = () => {
           )}
         </div>
 
-        {/* This button should only appear if not all complaints are shown and there are more than 3 */}
         {!showAllComplaints && filteredComplaints.length > 3 && (
           <div className="text-center">
             <button
@@ -373,4 +422,3 @@ const Dashboard = () => {
 }
 
 export default Dashboard
-// --- END OF FILE Dashboard.jsx ---
